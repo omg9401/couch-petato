@@ -1,0 +1,1702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Couch Petato — Handmade Pet Furniture, UAE</title>
+<meta name="description" content="Handcrafted pet furniture designed in the UAE. Customise colour, fabric & finish with our 3D configurator. Made with love, built to last.">
+<meta property="og:title" content="Couch Petato — Handmade Pet Furniture">
+<meta property="og:description" content="Your pet deserves furniture as thoughtful as yours. 3D-configure yours today.">
+<meta property="og:image" content="/static/og-image.jpg">
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=Inter:wght@300;400;500;600&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ════════════════════════════════════════════
+   DESIGN TOKENS
+   ════════════════════════════════════════════ */
+:root {
+  --ink:       #0F0E0B;
+  --ink-soft:  #2C2A25;
+  --amber:     #D97706;
+  --amber-lt:  #F59E0B;
+  --amber-pale:#FEF3C7;
+  --cream:     #FAF7F2;
+  --sand:      #F0EBE1;
+  --muted:     #7C7264;
+  --light:     #FFFFFF;
+  --border:    rgba(0,0,0,.08);
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'DM Sans', 'Inter', system-ui, sans-serif;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in:  cubic-bezier(0.7, 0, 0.84, 0);
+  --spring:   cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ════════════════════════════════════════════
+   RESET
+   ════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  font-family:var(--font-body);
+  background:var(--cream);
+  color:var(--ink);
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%;display:block}
+a{text-decoration:none;color:inherit}
+button{font-family:inherit;cursor:pointer}
+
+/* ════════════════════════════════════════════
+   SCROLLBAR
+   ════════════════════════════════════════════ */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--cream)}
+::-webkit-scrollbar-thumb{background:var(--amber);border-radius:3px}
+
+/* ════════════════════════════════════════════
+   CURSOR GLOW
+   ════════════════════════════════════════════ */
+.cursor-glow{
+  position:fixed;width:300px;height:300px;
+  background:radial-gradient(circle,rgba(217,119,6,.08) 0%,transparent 70%);
+  border-radius:50%;pointer-events:none;z-index:0;
+  transform:translate(-50%,-50%);transition:opacity .3s;
+  will-change:transform;
+}
+
+/* ════════════════════════════════════════════
+   NAV
+   ════════════════════════════════════════════ */
+.nav{
+  position:fixed;top:0;left:0;right:0;z-index:1000;
+  padding:0 40px;height:68px;
+  display:flex;align-items:center;justify-content:space-between;
+  transition:background .4s var(--ease-out), box-shadow .4s;
+}
+.nav.scrolled{
+  background:rgba(15,14,11,.94);
+  backdrop-filter:blur(20px);
+  box-shadow:0 1px 0 rgba(255,255,255,.06);
+}
+.nav-logo{
+  font-family:var(--font-display);
+  font-size:20px;font-weight:700;
+  color:var(--light);letter-spacing:-.3px;
+  display:flex;align-items:center;gap:10px;
+}
+.nav-logo-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--amber);
+  animation:pulse 2.4s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%,100%{transform:scale(1);opacity:1}
+  50%{transform:scale(1.5);opacity:.6}
+}
+.nav-links{display:flex;align-items:center;gap:32px}
+.nav-link{
+  font-size:13px;font-weight:500;color:rgba(255,255,255,.75);
+  letter-spacing:.02em;transition:color .2s;
+  position:relative;
+}
+.nav-link::after{
+  content:'';position:absolute;bottom:-2px;left:0;right:0;
+  height:1px;background:var(--amber);
+  transform:scaleX(0);transition:transform .25s var(--ease-out);
+  transform-origin:left;
+}
+.nav-link:hover{color:var(--light)}
+.nav-link:hover::after{transform:scaleX(1)}
+.nav-cta{
+  background:var(--amber);color:var(--light);
+  border:none;padding:9px 22px;border-radius:6px;
+  font-size:13px;font-weight:600;letter-spacing:.02em;
+  transition:background .2s,transform .15s var(--spring);
+}
+.nav-cta:hover{background:var(--amber-lt);transform:translateY(-1px)}
+.nav-cta:active{transform:translateY(0)}
+
+/* ════════════════════════════════════════════
+   HERO
+   ════════════════════════════════════════════ */
+.hero{
+  position:relative;min-height:100svh;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--ink);
+  overflow:hidden;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 60% 40%, rgba(217,119,6,.18) 0%, transparent 70%),
+    radial-gradient(ellipse 60% 80% at 20% 80%, rgba(217,119,6,.08) 0%, transparent 60%),
+    linear-gradient(160deg, #1a1712 0%, #0f0e0b 40%, #1c1509 100%);
+  z-index:0;
+}
+/* Floating geometric shapes */
+.hero-shape{
+  position:absolute;border-radius:50%;
+  background:radial-gradient(circle,rgba(217,119,6,.15),transparent 70%);
+  animation:float 6s ease-in-out infinite;
+  z-index:0;
+}
+.hero-shape:nth-child(1){width:600px;height:600px;top:-100px;right:-100px;animation-delay:0s}
+.hero-shape:nth-child(2){width:400px;height:400px;bottom:-50px;left:-100px;animation-delay:-3s}
+.hero-shape:nth-child(3){width:200px;height:200px;top:30%;left:20%;animation-delay:-1.5s;opacity:.5}
+
+@keyframes float{
+  0%,100%{transform:translateY(0) scale(1)}
+  50%{transform:translateY(-30px) scale(1.05)}
+}
+
+/* Grid overlay texture */
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+  background-size:60px 60px;
+  z-index:0;
+}
+
+.hero-content{
+  position:relative;z-index:1;
+  text-align:center;padding:100px 24px 60px;
+  max-width:900px;
+}
+
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(217,119,6,.15);
+  border:1px solid rgba(217,119,6,.3);
+  border-radius:100px;
+  padding:6px 16px;
+  font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--amber-lt);margin-bottom:28px;
+  animation:fadeUp .8s var(--ease-out) both;
+}
+.hero-eyebrow-dot{width:5px;height:5px;border-radius:50%;background:var(--amber-lt)}
+
+.hero-headline{
+  font-family:var(--font-display);
+  font-size:clamp(44px, 7vw, 90px);
+  font-weight:700;line-height:1.05;
+  color:var(--light);letter-spacing:-.03em;
+  margin-bottom:24px;
+}
+.hero-headline em{
+  font-style:italic;color:var(--amber);
+  display:block;
+}
+
+.hero-sub{
+  font-size:clamp(16px,1.5vw,20px);
+  font-weight:300;color:rgba(255,255,255,.55);
+  line-height:1.7;max-width:520px;margin:0 auto 44px;
+  animation:fadeUp .8s .3s var(--ease-out) both;
+}
+
+.hero-actions{
+  display:flex;align-items:center;justify-content:center;gap:16px;
+  flex-wrap:wrap;
+  animation:fadeUp .8s .4s var(--ease-out) both;
+}
+.btn-primary{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--amber);color:var(--light);
+  border:none;padding:16px 32px;border-radius:8px;
+  font-size:15px;font-weight:600;letter-spacing:.01em;
+  transition:background .2s,transform .2s var(--spring),box-shadow .2s;
+  box-shadow:0 4px 24px rgba(217,119,6,.4);
+}
+.btn-primary:hover{
+  background:var(--amber-lt);transform:translateY(-2px);
+  box-shadow:0 8px 32px rgba(217,119,6,.5);
+}
+.btn-primary:active{transform:translateY(0)}
+.btn-secondary{
+  display:inline-flex;align-items:center;gap:8px;
+  background:transparent;color:rgba(255,255,255,.75);
+  border:1px solid rgba(255,255,255,.2);
+  padding:15px 28px;border-radius:8px;
+  font-size:15px;font-weight:500;
+  transition:background .2s,border-color .2s,color .2s,transform .2s var(--spring);
+}
+.btn-secondary:hover{
+  background:rgba(255,255,255,.06);
+  border-color:rgba(255,255,255,.4);color:var(--light);
+  transform:translateY(-1px);
+}
+
+.hero-arrow{
+  position:absolute;bottom:36px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  color:rgba(255,255,255,.35);font-size:11px;letter-spacing:.1em;
+  animation:fadeIn 1s 1.2s both;
+}
+.hero-arrow svg{animation:arrowBounce 1.5s ease-in-out infinite}
+@keyframes arrowBounce{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(6px)}
+}
+
+/* Hero product preview cards */
+.hero-cards{
+  position:absolute;bottom:-40px;left:50%;transform:translateX(-50%);
+  width:min(900px,90vw);
+  display:flex;gap:16px;justify-content:center;
+  z-index:2;animation:fadeUp .8s .6s var(--ease-out) both;
+}
+.hero-card{
+  background:rgba(255,255,255,.06);
+  backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:16px;padding:20px;
+  flex:1;min-width:180px;max-width:220px;
+  text-align:left;cursor:pointer;
+  transition:background .2s,transform .25s var(--spring),border-color .2s;
+}
+.hero-card:hover{
+  background:rgba(255,255,255,.1);
+  border-color:rgba(217,119,6,.4);
+  transform:translateY(-4px);
+}
+.hero-card-img{
+  width:100%;aspect-ratio:4/3;border-radius:10px;
+  background:linear-gradient(135deg,#2a2618,#3d3322);
+  margin-bottom:12px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.hero-card-img span{font-size:32px;opacity:.7}
+.hero-card-name{font-size:13px;font-weight:600;color:var(--light);margin-bottom:4px}
+.hero-card-price{font-size:12px;color:var(--amber);font-weight:600}
+.hero-card-from{font-size:10px;color:rgba(255,255,255,.4);font-weight:400}
+
+/* ════════════════════════════════════════════
+   SCROLL REVEAL
+   ════════════════════════════════════════════ */
+.reveal{
+  opacity:0;transform:translateY(40px);
+  transition:opacity .8s var(--ease-out),transform .8s var(--ease-out);
+}
+.reveal.up{transform:translateY(40px)}
+.reveal.left{transform:translateX(-40px)}
+.reveal.right{transform:translateX(40px)}
+.reveal.scale{transform:scale(.94)}
+.reveal.visible{opacity:1;transform:none}
+
+/* stagger children */
+.stagger > *{
+  opacity:0;transform:translateY(30px);
+  transition:opacity .6s var(--ease-out),transform .6s var(--ease-out);
+}
+.stagger.visible > *:nth-child(1){transition-delay:.05s}
+.stagger.visible > *:nth-child(2){transition-delay:.12s}
+.stagger.visible > *:nth-child(3){transition-delay:.19s}
+.stagger.visible > *:nth-child(4){transition-delay:.26s}
+.stagger.visible > *:nth-child(5){transition-delay:.33s}
+.stagger.visible > *{opacity:1;transform:none}
+
+/* ════════════════════════════════════════════
+   SECTION COMMON
+   ════════════════════════════════════════════ */
+.section{padding:120px 40px}
+@media(max-width:768px){.section{padding:80px 20px}}
+.section-label{
+  font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--amber);margin-bottom:16px;
+}
+.section-title{
+  font-family:var(--font-display);
+  font-size:clamp(32px,4vw,52px);
+  font-weight:700;line-height:1.12;letter-spacing:-.03em;
+  margin-bottom:20px;
+}
+.section-sub{
+  font-size:17px;font-weight:300;color:var(--muted);
+  line-height:1.7;max-width:480px;
+}
+.container{max-width:1140px;margin:0 auto}
+
+/* ════════════════════════════════════════════
+   PRODUCTS
+   ════════════════════════════════════════════ */
+.products-section{
+  background:var(--light);
+  padding-top:160px; /* offset for hero cards */
+}
+.products-header{
+  display:flex;align-items:flex-end;justify-content:space-between;
+  margin-bottom:56px;gap:24px;flex-wrap:wrap;
+}
+.products-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:24px;
+}
+.product-card{
+  position:relative;border-radius:20px;overflow:hidden;
+  background:var(--sand);
+  transition:transform .35s var(--spring),box-shadow .35s;
+  cursor:pointer;
+}
+.product-card:hover{
+  transform:translateY(-8px);
+  box-shadow:0 24px 60px rgba(0,0,0,.12);
+}
+.product-card:hover .product-img-overlay{opacity:1}
+.product-card:hover .pc-configure{transform:translateY(0);opacity:1}
+.pc-img{
+  aspect-ratio:4/5;
+  background:linear-gradient(160deg,#e8e0d4,#d4c9b8);
+  display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;
+}
+.pc-img-emoji{font-size:72px;transition:transform .4s var(--spring)}
+.product-card:hover .pc-img-emoji{transform:scale(1.1) rotate(-5deg)}
+.product-img-overlay{
+  position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(15,14,11,.5),transparent 50%);
+  opacity:0;transition:opacity .3s;
+}
+.pc-configure{
+  position:absolute;bottom:16px;left:16px;right:16px;
+  background:rgba(217,119,6,.95);backdrop-filter:blur(8px);
+  color:var(--light);border:none;border-radius:8px;
+  padding:12px;font-size:13px;font-weight:600;
+  transform:translateY(12px);opacity:0;
+  transition:transform .3s var(--spring),opacity .3s;
+  letter-spacing:.02em;
+}
+.pc-body{padding:20px 20px 24px}
+.pc-name{
+  font-family:var(--font-display);font-size:22px;font-weight:600;
+  margin-bottom:6px;letter-spacing:-.02em;
+}
+.pc-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:14px}
+.pc-options{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+.pc-opt{
+  background:var(--light);border:1px solid var(--border);
+  border-radius:6px;padding:3px 9px;font-size:11px;font-weight:600;color:var(--muted);
+}
+.pc-footer{display:flex;align-items:center;justify-content:space-between}
+.pc-price{font-size:13px;font-weight:600;color:var(--muted)}
+.pc-price strong{font-size:18px;color:var(--ink);font-family:var(--font-display)}
+.pc-tag{
+  display:flex;align-items:center;gap:5px;
+  background:var(--amber-pale);color:#92400E;
+  border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;
+}
+
+/* ════════════════════════════════════════════
+   CONFIGURATOR
+   ════════════════════════════════════════════ */
+.config-section{
+  background:var(--ink);overflow:hidden;position:relative;
+}
+.config-section::before{
+  content:'';position:absolute;
+  top:-200px;left:-200px;
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(217,119,6,.15),transparent 60%);
+  pointer-events:none;
+}
+.config-section::after{
+  content:'';position:absolute;
+  bottom:-200px;right:-200px;
+  width:600px;height:600px;
+  background:radial-gradient(circle,rgba(217,119,6,.08),transparent 60%);
+  pointer-events:none;
+}
+.config-inner{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:80px;align-items:center;
+  position:relative;z-index:1;
+}
+@media(max-width:900px){.config-inner{grid-template-columns:1fr;gap:48px}}
+.config-text .section-title{color:var(--light)}
+.config-text .section-sub{color:rgba(255,255,255,.5);max-width:420px}
+.config-steps{margin-top:40px;display:flex;flex-direction:column;gap:20px}
+.config-step{
+  display:flex;gap:16px;align-items:flex-start;
+  padding:16px;border-radius:12px;
+  transition:background .2s;
+}
+.config-step:hover{background:rgba(255,255,255,.04)}
+.config-step-num{
+  width:36px;height:36px;border-radius:8px;
+  background:rgba(217,119,6,.2);border:1px solid rgba(217,119,6,.4);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:var(--amber);flex-shrink:0;
+}
+.config-step-title{font-size:14px;font-weight:600;color:var(--light);margin-bottom:4px}
+.config-step-desc{font-size:13px;color:rgba(255,255,255,.45);line-height:1.6}
+
+/* Configurator mockup UI */
+.config-preview{
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:24px;padding:28px;
+  position:relative;
+}
+.config-preview::before{
+  content:'LIVE CONFIGURATOR';
+  position:absolute;top:-12px;left:24px;
+  background:var(--amber);color:var(--light);
+  font-size:10px;font-weight:700;letter-spacing:.1em;
+  padding:4px 12px;border-radius:4px;
+}
+.config-product-view{
+  aspect-ratio:4/3;border-radius:14px;
+  background:linear-gradient(135deg,#1e1c17,#2d2a1f);
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:20px;font-size:80px;
+  position:relative;overflow:hidden;
+}
+.config-product-view::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 60% 60% at 50% 100%,rgba(217,119,6,.12),transparent);
+}
+.config-option-group{margin-bottom:16px}
+.config-option-label{
+  font-size:11px;font-weight:700;color:rgba(255,255,255,.4);
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;
+}
+.config-swatches{display:flex;gap:8px;flex-wrap:wrap}
+.config-swatch{
+  width:32px;height:32px;border-radius:8px;cursor:pointer;
+  border:2px solid transparent;transition:transform .2s var(--spring),border-color .15s;
+  position:relative;
+}
+.config-swatch:hover{transform:scale(1.2)}
+.config-swatch.active{border-color:var(--amber)}
+.config-swatch.active::after{
+  content:'✓';position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;color:var(--light);
+  text-shadow:0 1px 3px rgba(0,0,0,.6);
+}
+.config-sizes{display:flex;gap:8px}
+.config-size-btn{
+  flex:1;padding:8px;border-radius:6px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  color:rgba(255,255,255,.6);font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .15s;
+}
+.config-size-btn:hover,.config-size-btn.active{
+  background:rgba(217,119,6,.2);border-color:rgba(217,119,6,.5);
+  color:var(--amber);
+}
+.config-price{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-top:16px;border-top:1px solid rgba(255,255,255,.08);
+  margin-top:16px;
+}
+.config-price-label{font-size:12px;color:rgba(255,255,255,.4)}
+.config-price-value{
+  font-family:var(--font-display);font-size:28px;font-weight:700;
+  color:var(--amber);
+}
+
+/* ════════════════════════════════════════════
+   PROCESS (HOW WE MAKE IT)
+   ════════════════════════════════════════════ */
+.process-section{background:var(--cream)}
+.process-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:1px;background:var(--border);
+  border-radius:20px;overflow:hidden;
+  border:1px solid var(--border);
+  margin-top:64px;
+}
+.process-step{
+  background:var(--light);
+  padding:40px 32px;
+  position:relative;
+  transition:background .2s;
+}
+.process-step:hover{background:var(--sand)}
+.process-num{
+  font-family:var(--font-display);font-size:56px;font-weight:700;
+  color:var(--amber-pale);line-height:1;margin-bottom:16px;
+}
+.process-icon{font-size:28px;margin-bottom:14px}
+.process-title{font-size:17px;font-weight:700;margin-bottom:8px;letter-spacing:-.02em}
+.process-desc{font-size:13px;color:var(--muted);line-height:1.65}
+
+/* ════════════════════════════════════════════
+   STORY / WHY US
+   ════════════════════════════════════════════ */
+.story-section{
+  background:var(--sand);
+  overflow:hidden;
+}
+.story-inner{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:80px;align-items:center;
+}
+@media(max-width:900px){.story-inner{grid-template-columns:1fr;gap:48px}}
+.story-visual{position:relative}
+.story-img-main{
+  aspect-ratio:3/4;border-radius:24px;
+  background:linear-gradient(160deg,#e8dfc8,#c9b89a);
+  display:flex;align-items:center;justify-content:center;
+  font-size:100px;overflow:hidden;position:relative;
+}
+.story-img-float{
+  position:absolute;bottom:-24px;right:-24px;
+  width:55%;aspect-ratio:1;border-radius:16px;
+  background:linear-gradient(135deg,#2a2618,#1a1512);
+  border:3px solid var(--light);
+  display:flex;align-items:center;justify-content:center;font-size:40px;
+  overflow:hidden;
+}
+.story-facts{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px;
+  margin-top:40px;
+}
+.story-fact{
+  background:var(--light);border-radius:14px;padding:20px;
+  transition:transform .2s var(--spring);
+}
+.story-fact:hover{transform:translateY(-3px)}
+.story-fact-num{
+  font-family:var(--font-display);font-size:32px;font-weight:700;
+  color:var(--amber);line-height:1;margin-bottom:6px;
+}
+.story-fact-label{font-size:12px;color:var(--muted);line-height:1.4}
+.story-text p{font-size:17px;color:var(--muted);line-height:1.75;margin-bottom:20px;font-weight:300}
+.story-signature{
+  font-family:var(--font-display);font-size:28px;font-style:italic;
+  color:var(--amber);margin-top:8px;
+}
+
+/* ════════════════════════════════════════════
+   MATERIALS STRIP
+   ════════════════════════════════════════════ */
+.materials-section{
+  background:var(--ink);padding:80px 40px;
+}
+.materials-inner{
+  display:grid;grid-template-columns:1fr 2fr;gap:64px;align-items:center;
+}
+@media(max-width:768px){.materials-inner{grid-template-columns:1fr;gap:36px}}
+.materials-title{
+  font-family:var(--font-display);font-size:clamp(28px,3vw,44px);
+  font-weight:700;color:var(--light);letter-spacing:-.03em;
+  line-height:1.15;
+}
+.materials-title span{color:var(--amber)}
+.materials-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:12px;
+}
+.mat-card{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;padding:20px 16px;
+  transition:background .2s,transform .2s var(--spring);
+  cursor:default;
+}
+.mat-card:hover{
+  background:rgba(217,119,6,.12);
+  border-color:rgba(217,119,6,.3);
+  transform:scale(1.03);
+}
+.mat-icon{font-size:24px;margin-bottom:10px}
+.mat-name{font-size:13px;font-weight:700;color:var(--light);margin-bottom:4px}
+.mat-desc{font-size:11px;color:rgba(255,255,255,.4);line-height:1.5}
+
+/* Colour palette strip */
+.palette-row{
+  display:flex;gap:8px;margin-top:32px;flex-wrap:wrap;
+}
+.palette-dot{
+  width:36px;height:36px;border-radius:10px;cursor:pointer;
+  transition:transform .2s var(--spring),box-shadow .2s;
+  position:relative;
+}
+.palette-dot:hover{transform:scale(1.25) translateY(-4px);box-shadow:0 6px 20px rgba(0,0,0,.3)}
+.palette-dot[title]:hover::after{
+  content:attr(title);
+  position:absolute;bottom:-28px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.8);color:#fff;
+  font-size:10px;padding:3px 8px;border-radius:4px;white-space:nowrap;
+}
+
+/* ════════════════════════════════════════════
+   TESTIMONIALS
+   ════════════════════════════════════════════ */
+.testimonials-section{background:var(--light);padding:100px 40px}
+.testimonials-track{
+  display:flex;gap:24px;overflow-x:auto;
+  padding-bottom:12px;scroll-snap-type:x mandatory;
+  -ms-overflow-style:none;scrollbar-width:none;
+  cursor:grab;
+}
+.testimonials-track:active{cursor:grabbing}
+.testimonials-track::-webkit-scrollbar{display:none}
+.testimonial-card{
+  min-width:320px;flex-shrink:0;
+  background:var(--sand);border-radius:20px;padding:28px;
+  scroll-snap-align:start;
+  transition:transform .2s var(--spring);
+}
+.testimonial-card:hover{transform:scale(1.02)}
+.t-stars{font-size:16px;margin-bottom:14px;letter-spacing:2px}
+.t-quote{
+  font-family:var(--font-display);font-size:18px;font-weight:600;
+  line-height:1.55;color:var(--ink);margin-bottom:20px;
+  font-style:italic;
+}
+.t-author{display:flex;align-items:center;gap:12px}
+.t-avatar{
+  width:44px;height:44px;border-radius:50%;
+  background:linear-gradient(135deg,#d4c9b8,#b8a99a);
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  flex-shrink:0;
+}
+.t-name{font-size:14px;font-weight:700;color:var(--ink)}
+.t-pet{font-size:12px;color:var(--muted)}
+
+/* ════════════════════════════════════════════
+   INSTAGRAM GRID
+   ════════════════════════════════════════════ */
+.insta-section{background:var(--cream);padding:80px 40px}
+.insta-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:32px;flex-wrap:wrap;gap:16px;
+}
+.insta-handle{
+  display:inline-flex;align-items:center;gap:8px;
+  color:var(--amber);font-weight:700;font-size:15px;
+}
+.insta-grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:6px;
+}
+@media(max-width:768px){.insta-grid{grid-template-columns:repeat(3,1fr)}}
+.insta-cell{
+  aspect-ratio:1;border-radius:10px;
+  background:var(--sand);
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;overflow:hidden;cursor:pointer;
+  position:relative;
+  transition:transform .25s var(--spring);
+}
+.insta-cell:hover{transform:scale(0.96)}
+.insta-cell:hover .insta-overlay{opacity:1}
+.insta-overlay{
+  position:absolute;inset:0;
+  background:rgba(217,119,6,.6);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;transition:opacity .2s;
+  font-size:20px;color:var(--light);
+}
+.insta-cell:nth-child(1){background:linear-gradient(135deg,#e8dfc8,#d4c9b8)}
+.insta-cell:nth-child(2){background:linear-gradient(135deg,#c9b89a,#b8a98a)}
+.insta-cell:nth-child(3){background:linear-gradient(135deg,#d4c9b8,#e8dfc8)}
+.insta-cell:nth-child(4){background:linear-gradient(135deg,#1a1512,#2a2618)}
+.insta-cell:nth-child(5){background:linear-gradient(135deg,#e8dfc8,#c9b89a)}
+.insta-cell:nth-child(6){background:linear-gradient(135deg,#b8a98a,#d4c9b8)}
+
+/* ════════════════════════════════════════════
+   CTA BAND
+   ════════════════════════════════════════════ */
+.cta-section{
+  background:var(--amber);
+  padding:80px 40px;text-align:center;
+  position:relative;overflow:hidden;
+}
+.cta-section::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 80% 100% at 50% 50%,rgba(255,255,255,.15),transparent);
+}
+.cta-inner{position:relative;z-index:1;max-width:640px;margin:0 auto}
+.cta-title{
+  font-family:var(--font-display);
+  font-size:clamp(32px,4vw,52px);
+  font-weight:700;color:var(--light);
+  line-height:1.1;letter-spacing:-.03em;margin-bottom:16px;
+}
+.cta-sub{
+  font-size:17px;color:rgba(255,255,255,.75);
+  margin-bottom:36px;line-height:1.6;font-weight:300;
+}
+.cta-actions{display:flex;justify-content:center;gap:14px;flex-wrap:wrap}
+.btn-white{
+  background:var(--light);color:var(--amber);
+  border:none;padding:16px 32px;border-radius:8px;
+  font-size:15px;font-weight:700;
+  transition:transform .2s var(--spring),box-shadow .2s;
+}
+.btn-white:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.2)}
+.btn-ghost-white{
+  background:transparent;color:var(--light);
+  border:2px solid rgba(255,255,255,.6);
+  padding:14px 30px;border-radius:8px;
+  font-size:15px;font-weight:600;
+  transition:all .2s;
+}
+.btn-ghost-white:hover{background:rgba(255,255,255,.1);border-color:var(--light)}
+
+/* ════════════════════════════════════════════
+   FOOTER
+   ════════════════════════════════════════════ */
+.footer{
+  background:var(--ink);
+  padding:64px 40px 32px;
+}
+.footer-grid{
+  display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;
+  margin-bottom:48px;
+}
+@media(max-width:900px){.footer-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.footer-grid{grid-template-columns:1fr}}
+.footer-brand-name{
+  font-family:var(--font-display);font-size:22px;font-weight:700;
+  color:var(--light);margin-bottom:12px;
+  display:flex;align-items:center;gap:8px;
+}
+.footer-brand-dot{width:8px;height:8px;border-radius:50%;background:var(--amber)}
+.footer-brand-desc{
+  font-size:13px;color:rgba(255,255,255,.45);
+  line-height:1.7;max-width:280px;margin-bottom:24px;
+}
+.footer-social{display:flex;gap:10px}
+.footer-social-btn{
+  width:38px;height:38px;border-radius:10px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:rgba(255,255,255,.6);
+  transition:background .2s,color .2s,transform .2s var(--spring);
+}
+.footer-social-btn:hover{
+  background:rgba(217,119,6,.2);border-color:rgba(217,119,6,.4);
+  color:var(--amber);transform:translateY(-2px);
+}
+.footer-col h4{
+  font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  color:rgba(255,255,255,.35);margin-bottom:16px;
+}
+.footer-links{display:flex;flex-direction:column;gap:9px}
+.footer-link{
+  font-size:13px;color:rgba(255,255,255,.55);
+  transition:color .15s;display:flex;align-items:center;gap:6px;
+}
+.footer-link:hover{color:var(--light)}
+.footer-divider{border:none;border-top:1px solid rgba(255,255,255,.07);margin-bottom:24px}
+.footer-bottom{
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+}
+.footer-copy{font-size:12px;color:rgba(255,255,255,.25)}
+.footer-badges{display:flex;gap:8px}
+.footer-badge{
+  background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:6px;padding:4px 10px;
+  font-size:10px;font-weight:700;letter-spacing:.06em;
+  color:rgba(255,255,255,.3);text-transform:uppercase;
+}
+
+/* ════════════════════════════════════════════
+   STICKY CONFIGURE BAR
+   ════════════════════════════════════════════ */
+.sticky-bar{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);
+  z-index:900;
+  background:var(--ink);
+  border:1px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(20px);
+  border-radius:100px;padding:12px 12px 12px 24px;
+  display:flex;align-items:center;gap:16px;
+  box-shadow:0 16px 60px rgba(0,0,0,.4);
+  transition:transform .5s var(--spring);
+}
+.sticky-bar.visible{transform:translateX(-50%) translateY(0)}
+.sticky-bar-text{
+  font-size:14px;font-weight:600;color:var(--light);
+  white-space:nowrap;
+}
+.sticky-bar-sub{font-size:11px;color:rgba(255,255,255,.45);font-weight:400}
+.btn-sticky{
+  background:var(--amber);color:var(--light);
+  border:none;padding:11px 24px;border-radius:100px;
+  font-size:13px;font-weight:700;
+  white-space:nowrap;
+  transition:background .2s,transform .15s var(--spring);
+}
+.btn-sticky:hover{background:var(--amber-lt);transform:scale(1.04)}
+
+/* ════════════════════════════════════════════
+   ANIMATIONS
+   ════════════════════════════════════════════ */
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(24px)}
+  to{opacity:1;transform:none}
+}
+@keyframes fadeIn{
+  from{opacity:0}to{opacity:1}
+}
+/* Number counter animation */
+.count-num{display:inline-block;transition:all .2s}
+
+/* ════════════════════════════════════════════
+   MOBILE
+   ════════════════════════════════════════════ */
+@media(max-width:768px){
+  .nav{padding:0 20px}
+  .nav-links{display:none}
+  .hero-cards{display:none}
+  .hero-headline{letter-spacing:-.04em}
+  .products-header{flex-direction:column;align-items:flex-start}
+  .config-inner,.story-inner{gap:36px}
+  .footer-grid{grid-template-columns:1fr;gap:32px}
+  .insta-grid{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- Cursor glow -->
+<div class="cursor-glow" id="cursor-glow"></div>
+
+<!-- ══════════════════════════════════════════════
+     NAV
+═══════════════════════════════════════════════ -->
+<nav class="nav" id="main-nav">
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-dot"></div>
+    Couch Petato
+  </a>
+  <div class="nav-links">
+    <a href="#products" class="nav-link">Products</a>
+    <a href="#configure" class="nav-link">Configure</a>
+    <a href="#story" class="nav-link">Our Story</a>
+    <a href="https://instagram.com/couch.petato" target="_blank" class="nav-link">@couch.petato</a>
+  </div>
+  <button class="nav-cta" onclick="document.getElementById('configure').scrollIntoView({behavior:'smooth'})">
+    Configure Yours →
+  </button>
+</nav>
+
+
+<!-- ══════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════ -->
+<section class="hero" id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-shape"></div>
+  <div class="hero-shape"></div>
+  <div class="hero-shape"></div>
+
+  <div class="hero-content">
+    <div class="hero-eyebrow">
+      <div class="hero-eyebrow-dot"></div>
+      Handmade in the UAE · Ships Nationwide
+    </div>
+
+    <h1 class="hero-headline" style="animation:fadeUp .8s .1s var(--ease-out) both">
+      Furniture made<br>
+      <em>for those who live on it.</em>
+    </h1>
+
+    <p class="hero-sub">
+      Handcrafted pet furniture, built to feel like yours.
+      Pick your colour, fabric, size — watch the price update live.
+    </p>
+
+    <div class="hero-actions">
+      <button class="btn-primary" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">
+        <span>Shop the Collection</span>
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="btn-secondary" onclick="document.getElementById('configure').scrollIntoView({behavior:'smooth'})">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93A10 10 0 0 1 21 12a10 10 0 0 1-1.93 7.07"/><path d="M4.93 4.93A10 10 0 0 0 3 12a10 10 0 0 0 1.93 7.07"/></svg>
+        3D Configurator
+      </button>
+    </div>
+  </div>
+
+  <!-- Product preview cards -->
+  <div class="hero-cards">
+    <div class="hero-card" onclick="document.getElementById('products').scrollIntoView({behavior:'smooth'})">
+      <div class="hero-card-img"><span>🛋️</span></div>
+      <div class="hero-card-name">Cami Round</div>
+      <div><span class="hero-card-from">from </span><span class="hero-card-price">AED 499</span></div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-card-img"><span>📦</span></div>
+      <div class="hero-card-name">Reacher Box</div>
+      <div><span class="hero-card-from">from </span><span class="hero-card-price">AED 599</span></div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-card-img"><span>⭕</span></div>
+      <div class="hero-card-name">Lisa Round</div>
+      <div><span class="hero-card-from">from </span><span class="hero-card-price">AED 449</span></div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-card-img"><span>🪑</span></div>
+      <div class="hero-card-name">Coco Seater</div>
+      <div><span class="hero-card-from">from </span><span class="hero-card-price">AED 699</span></div>
+    </div>
+  </div>
+
+  <div class="hero-arrow">
+    <span style="font-size:10px;letter-spacing:.12em;text-transform:uppercase">Scroll</span>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     PRODUCTS
+═══════════════════════════════════════════════ -->
+<section class="products-section section" id="products">
+  <div class="container">
+    <div class="products-header">
+      <div>
+        <div class="section-label reveal">The Collection</div>
+        <h2 class="section-title reveal">Every piece,<br><em style="font-style:italic;color:var(--amber)">made by hand.</em></h2>
+      </div>
+      <p class="section-sub reveal right" style="text-align:right">
+        From round cushion beds to structured box loungers — each design ships with your choice of fabric, colour, and finish.
+      </p>
+    </div>
+
+    <div class="products-grid stagger">
+      <!-- Cami Round -->
+      <div class="product-card">
+        <div class="pc-img">
+          <span class="pc-img-emoji">🛋️</span>
+          <div class="product-img-overlay"></div>
+          <button class="pc-configure">Configure This →</button>
+        </div>
+        <div class="pc-body">
+          <div class="pc-name">Cami Round</div>
+          <p class="pc-desc">Round silhouette with Mickey Mouse ear legs. Two cushion options. Wrapped in your choice of fabric.</p>
+          <div class="pc-options">
+            <span class="pc-opt">12 Colours</span>
+            <span class="pc-opt">3 Sizes</span>
+            <span class="pc-opt">6 Wood Finishes</span>
+          </div>
+          <div class="pc-footer">
+            <div class="pc-price"><span style="font-size:11px;color:var(--muted)">from </span><strong>AED 499</strong></div>
+            <div class="pc-tag">🛠️ Handmade</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reacher Box -->
+      <div class="product-card">
+        <div class="pc-img" style="background:linear-gradient(160deg,#d4c9b8,#b8a98a)">
+          <span class="pc-img-emoji">📦</span>
+          <div class="product-img-overlay"></div>
+          <button class="pc-configure">Configure This →</button>
+        </div>
+        <div class="pc-body">
+          <div class="pc-name">Reacher Box</div>
+          <p class="pc-desc">Curved box lounge — fully fabric-wrapped frame. Low profile, clean lines. Effortlessly modern.</p>
+          <div class="pc-options">
+            <span class="pc-opt">12 Colours</span>
+            <span class="pc-opt">2 Sizes</span>
+            <span class="pc-opt">Curved Frame</span>
+          </div>
+          <div class="pc-footer">
+            <div class="pc-price"><span style="font-size:11px;color:var(--muted)">from </span><strong>AED 599</strong></div>
+            <div class="pc-tag">✨ New</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lisa Round -->
+      <div class="product-card">
+        <div class="pc-img" style="background:linear-gradient(160deg,#e8e8e0,#d0d0c8)">
+          <span class="pc-img-emoji">⭕</span>
+          <div class="product-img-overlay"></div>
+          <button class="pc-configure">Configure This →</button>
+        </div>
+        <div class="pc-body">
+          <div class="pc-name">Lisa Round</div>
+          <p class="pc-desc">The no-cushion round. Clean, architectural, minimal. Let the fabric do the talking.</p>
+          <div class="pc-options">
+            <span class="pc-opt">12 Colours</span>
+            <span class="pc-opt">3 Sizes</span>
+            <span class="pc-opt">No Cushion</span>
+          </div>
+          <div class="pc-footer">
+            <div class="pc-price"><span style="font-size:11px;color:var(--muted)">from </span><strong>AED 449</strong></div>
+            <div class="pc-tag">🛠️ Handmade</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Coco Seater -->
+      <div class="product-card">
+        <div class="pc-img" style="background:linear-gradient(160deg,#d4c0a8,#b89870)">
+          <span class="pc-img-emoji">🪑</span>
+          <div class="product-img-overlay"></div>
+          <button class="pc-configure">Configure This →</button>
+        </div>
+        <div class="pc-body">
+          <div class="pc-name">Coco Seater</div>
+          <p class="pc-desc">Single seater throne for your little one. Deep-seated, plush, and stupidly comfortable.</p>
+          <div class="pc-options">
+            <span class="pc-opt">12 Colours</span>
+            <span class="pc-opt">Single Size</span>
+            <span class="pc-opt">Deep Seat</span>
+          </div>
+          <div class="pc-footer">
+            <div class="pc-price"><span style="font-size:11px;color:var(--muted)">from </span><strong>AED 699</strong></div>
+            <div class="pc-tag">⭐ Best Seller</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acrylic Box -->
+      <div class="product-card">
+        <div class="pc-img" style="background:linear-gradient(160deg,#e8f4ff,#c8d8ee)">
+          <span class="pc-img-emoji">💎</span>
+          <div class="product-img-overlay"></div>
+          <button class="pc-configure">Configure This →</button>
+        </div>
+        <div class="pc-body">
+          <div class="pc-name">Acrylic Box</div>
+          <p class="pc-desc">The statement piece. Crystal-clear acrylic construction. Modern, bold, unmistakably Couch Petato.</p>
+          <div class="pc-options">
+            <span class="pc-opt">Clear / Tinted</span>
+            <span class="pc-opt">2 Sizes</span>
+            <span class="pc-opt">Acrylic Frame</span>
+          </div>
+          <div class="pc-footer">
+            <div class="pc-price"><span style="font-size:11px;color:var(--muted)">from </span><strong>AED 899</strong></div>
+            <div class="pc-tag">💎 Premium</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Custom / Bespoke CTA card -->
+      <div class="product-card" style="background:var(--ink);display:flex;flex-direction:column;justify-content:center;text-align:center;padding:40px 28px">
+        <div style="font-size:48px;margin-bottom:20px">✦</div>
+        <div class="pc-name" style="color:var(--light);font-size:20px;margin-bottom:10px">Your Vision</div>
+        <p class="pc-desc" style="color:rgba(255,255,255,.5);margin-bottom:24px">Not finding your perfect piece? Let's build something entirely yours.</p>
+        <button class="btn-primary" style="width:100%;justify-content:center">
+          Enquire Custom →
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     CONFIGURATOR
+═══════════════════════════════════════════════ -->
+<section class="config-section section" id="configure">
+  <div class="container">
+    <div class="config-inner">
+
+      <div class="config-text">
+        <div class="section-label reveal">3D Configurator</div>
+        <h2 class="section-title reveal">Your pet's couch,<br><em style="color:var(--amber)">your exact taste.</em></h2>
+        <p class="section-sub reveal">
+          Pick a size, select a wood finish, scroll through 12 fabric colours, and watch the price update in real time. No surprises at checkout.
+        </p>
+
+        <div class="config-steps stagger" style="margin-top:40px">
+          <div class="config-step">
+            <div class="config-step-num">01</div>
+            <div>
+              <div class="config-step-title">Choose your size</div>
+              <div class="config-step-desc">Small, Medium, or Large — each with exact dimensions shown live.</div>
+            </div>
+          </div>
+          <div class="config-step">
+            <div class="config-step-num">02</div>
+            <div>
+              <div class="config-step-title">Pick your wood finish</div>
+              <div class="config-step-desc">6 options from solid stains to readymade finishes. Each priced individually.</div>
+            </div>
+          </div>
+          <div class="config-step">
+            <div class="config-step-num">03</div>
+            <div>
+              <div class="config-step-title">Select your fabric</div>
+              <div class="config-step-desc">10 plain textures + 2 premium patterned options. Request a swatch first.</div>
+            </div>
+          </div>
+          <div class="config-step">
+            <div class="config-step-num">04</div>
+            <div>
+              <div class="config-step-title">Add to cart</div>
+              <div class="config-step-desc">Your exact configuration locks in. We handmake it and ship within 10–14 days.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Configurator UI mockup -->
+      <div class="config-preview reveal right">
+        <div class="config-product-view" id="config-view">
+          <span id="config-emoji" style="font-size:80px;position:relative;z-index:1">🛋️</span>
+        </div>
+
+        <div class="config-option-group">
+          <div class="config-option-label">Select colour</div>
+          <div class="config-swatches" id="config-swatches">
+            <div class="config-swatch active" style="background:#e8d5b7" data-name="Beige" title="Beige" onclick="selectSwatch(this,'Beige','#e8d5b7')"></div>
+            <div class="config-swatch" style="background:#c9a882" data-name="Caramel" title="Caramel" onclick="selectSwatch(this,'Caramel','#c9a882')"></div>
+            <div class="config-swatch" style="background:#5c4a3a" data-name="Mocha" title="Mocha" onclick="selectSwatch(this,'Mocha','#5c4a3a')"></div>
+            <div class="config-swatch" style="background:#2d3a2d" data-name="Forest" title="Forest" onclick="selectSwatch(this,'Forest','#2d3a2d')"></div>
+            <div class="config-swatch" style="background:#4a5568" data-name="Slate" title="Slate" onclick="selectSwatch(this,'Slate','#4a5568')"></div>
+            <div class="config-swatch" style="background:#1a1a2e" data-name="Navy" title="Navy" onclick="selectSwatch(this,'Navy','#1a1a2e')"></div>
+            <div class="config-swatch" style="background:#d4a5a5" data-name="Dusty Rose" title="Dusty Rose" onclick="selectSwatch(this,'Dusty Rose','#d4a5a5')"></div>
+            <div class="config-swatch" style="background:#f5f5f0" data-name="Ivory" title="Ivory" onclick="selectSwatch(this,'Ivory','#f5f5f0');document.querySelector('#config-view').style.background='linear-gradient(135deg,#2e2a20,#1e1c14)'"></div>
+          </div>
+        </div>
+
+        <div class="config-option-group">
+          <div class="config-option-label">Size</div>
+          <div class="config-sizes" id="config-sizes">
+            <button class="config-size-btn active" onclick="selectSize(this,'S',499)">S</button>
+            <button class="config-size-btn" onclick="selectSize(this,'M',649)">M</button>
+            <button class="config-size-btn" onclick="selectSize(this,'L',799)">L</button>
+          </div>
+        </div>
+
+        <div class="config-option-group">
+          <div class="config-option-label">Wood finish</div>
+          <div class="config-swatches">
+            <div class="config-swatch active" style="background:#8B6914" title="Golden Oak" onclick="this.parentNode.querySelectorAll('.config-swatch').forEach(s=>s.classList.remove('active'));this.classList.add('active')"></div>
+            <div class="config-swatch" style="background:#4a3728" title="Dark Walnut" onclick="this.parentNode.querySelectorAll('.config-swatch').forEach(s=>s.classList.remove('active'));this.classList.add('active')"></div>
+            <div class="config-swatch" style="background:#c9b89a" title="Natural" onclick="this.parentNode.querySelectorAll('.config-swatch').forEach(s=>s.classList.remove('active'));this.classList.add('active')"></div>
+            <div class="config-swatch" style="background:#1a1a1a" title="Ebony" onclick="this.parentNode.querySelectorAll('.config-swatch').forEach(s=>s.classList.remove('active'));this.classList.add('active')"></div>
+            <div class="config-swatch" style="background:#d4c4b0" title="Ash" onclick="this.parentNode.querySelectorAll('.config-swatch').forEach(s=>s.classList.remove('active'));this.classList.add('active')"></div>
+            <div class="config-swatch" style="background:#e8e0d0" title="Whitewash" onclick="this.parentNode.querySelectorAll('.config-swatch').forEach(s=>s.classList.remove('active'));this.classList.add('active')"></div>
+          </div>
+        </div>
+
+        <div class="config-price">
+          <div>
+            <div class="config-price-label">Total price</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.3);margin-top:2px">Incl. VAT · Free UAE shipping over AED 300</div>
+          </div>
+          <div class="config-price-value" id="config-price">AED 499</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     PROCESS
+═══════════════════════════════════════════════ -->
+<section class="process-section section">
+  <div class="container">
+    <div class="section-label reveal">How We Make It</div>
+    <h2 class="section-title reveal" style="max-width:480px">From raw material<br>to your doorstep.</h2>
+
+    <div class="process-grid stagger" style="margin-top:64px">
+      <div class="process-step">
+        <div class="process-num">01</div>
+        <div class="process-icon">🪵</div>
+        <div class="process-title">Frame crafted</div>
+        <p class="process-desc">The skeleton is cut, shaped, and assembled in our workshop. Every joint is sanded by hand.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-num">02</div>
+        <div class="process-icon">🪡</div>
+        <div class="process-title">Fabric upholstered</div>
+        <p class="process-desc">Your selected fabric is stretched, tucked, and stapled with precision. No shortcuts on the corners.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-num">03</div>
+        <div class="process-icon">🔩</div>
+        <div class="process-title">Legs & finish</div>
+        <p class="process-desc">Legs are fitted and stained in your selected wood finish. Every piece is inspected before boxing.</p>
+      </div>
+      <div class="process-step">
+        <div class="process-num">04</div>
+        <div class="process-icon">📦</div>
+        <div class="process-title">Packed with love</div>
+        <p class="process-desc">Wrapped in bubble, boxed, stickered, and sent with our embossed tag and handwritten note card.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     STORY
+═══════════════════════════════════════════════ -->
+<section class="story-section section" id="story">
+  <div class="container">
+    <div class="story-inner">
+
+      <div class="story-visual reveal left">
+        <div class="story-img-main">
+          <span style="font-size:100px">🐾</span>
+        </div>
+        <div class="story-img-float">
+          <span style="font-size:40px">✦</span>
+        </div>
+      </div>
+
+      <div class="story-text reveal right">
+        <div class="section-label">Our Story</div>
+        <h2 class="section-title" style="max-width:380px">Built for pets<br>who refuse to settle.</h2>
+
+        <p>
+          Couch Petato started with a simple frustration — every pet bed looked like an afterthought. Cheap fabric, wobbly legs, and zero soul. We knew our pets deserved better.
+        </p>
+        <p>
+          Everything is handmade in our UAE workshop, on demand. When you configure a piece, we build it from scratch — your size, your colour, your wood finish. That's not a promise, it's just how we work.
+        </p>
+        <p>
+          We're a small team obsessed with craft, quality, and making things that belong in your home — not hidden under it.
+        </p>
+
+        <div class="story-signature">— The Couch Petato Team</div>
+
+        <div class="story-facts stagger" style="margin-top:40px">
+          <div class="story-fact">
+            <div class="story-fact-num count-up" data-target="12">0</div>
+            <div class="story-fact-label">Fabric colours<br>available</div>
+          </div>
+          <div class="story-fact">
+            <div class="story-fact-num count-up" data-target="6">0</div>
+            <div class="story-fact-label">Wood finish<br>options</div>
+          </div>
+          <div class="story-fact">
+            <div class="story-fact-num count-up" data-target="5">0</div>
+            <div class="story-fact-label">Product<br>designs</div>
+          </div>
+          <div class="story-fact">
+            <div class="story-fact-num" style="font-family:var(--font-display);font-size:32px;font-weight:700;color:var(--amber);line-height:1;margin-bottom:6px">UAE</div>
+            <div class="story-fact-label">Made &<br>shipped from</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     MATERIALS
+═══════════════════════════════════════════════ -->
+<section class="materials-section">
+  <div class="container">
+    <div class="materials-inner">
+      <div>
+        <div class="section-label reveal" style="color:rgba(217,119,6,.8)">What We Use</div>
+        <h3 class="materials-title reveal">Materials that<br><span>earn your trust.</span></h3>
+
+        <div class="palette-row stagger" style="margin-top:32px">
+          <div class="palette-dot" style="background:#e8d5b7" title="Beige"></div>
+          <div class="palette-dot" style="background:#c9a882" title="Caramel"></div>
+          <div class="palette-dot" style="background:#5c4a3a" title="Mocha"></div>
+          <div class="palette-dot" style="background:#2d3a2d" title="Forest"></div>
+          <div class="palette-dot" style="background:#4a5568" title="Slate"></div>
+          <div class="palette-dot" style="background:#1a1a2e" title="Navy"></div>
+          <div class="palette-dot" style="background:#d4a5a5" title="Dusty Rose"></div>
+          <div class="palette-dot" style="background:#f5f5f0" title="Ivory"></div>
+          <div class="palette-dot" style="background:#8b4513" title="Terracotta"></div>
+          <div class="palette-dot" style="background:#708090" title="Steel Blue"></div>
+          <div class="palette-dot" style="background:#3d2b1f" title="Espresso"></div>
+          <div class="palette-dot" style="background:#deb887" title="Wheat"></div>
+        </div>
+        <div style="font-size:12px;color:rgba(255,255,255,.3);margin-top:12px">12 colour options · 2 premium patterns</div>
+      </div>
+
+      <div class="materials-grid stagger">
+        <div class="mat-card">
+          <div class="mat-icon">🪵</div>
+          <div class="mat-name">Solid Wood</div>
+          <div class="mat-desc">Premium-grade frames for lasting structure and minimal flex</div>
+        </div>
+        <div class="mat-card">
+          <div class="mat-icon">🧶</div>
+          <div class="mat-name">Velvet & Bouclé</div>
+          <div class="mat-desc">Supplier-sourced fabrics chosen for durability and touch</div>
+        </div>
+        <div class="mat-card">
+          <div class="mat-icon">☁️</div>
+          <div class="mat-name">High-Density Foam</div>
+          <div class="mat-desc">Tested for comfort and shape retention over time</div>
+        </div>
+        <div class="mat-card">
+          <div class="mat-icon">🔩</div>
+          <div class="mat-name">Reinforced Joints</div>
+          <div class="mat-desc">Every leg and corner is double-secured by hand</div>
+        </div>
+        <div class="mat-card">
+          <div class="mat-icon">🎨</div>
+          <div class="mat-name">Stain & Seal</div>
+          <div class="mat-desc">6 wood stain options, sealed for moisture resistance</div>
+        </div>
+        <div class="mat-card">
+          <div class="mat-icon">💎</div>
+          <div class="mat-name">Acrylic Option</div>
+          <div class="mat-desc">Clear or tinted cast acrylic for our statement pieces</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     TESTIMONIALS
+═══════════════════════════════════════════════ -->
+<section class="testimonials-section">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:40px;flex-wrap:wrap;gap:16px">
+      <div>
+        <div class="section-label reveal">Loved By Pets &amp; Their Humans</div>
+        <h2 class="section-title reveal" style="max-width:360px">They said what<br>their pets couldn't.</h2>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button onclick="scrollTestimonials(-1)" style="width:44px;height:44px;border-radius:50%;background:var(--sand);border:1px solid var(--border);cursor:pointer;font-size:18px;transition:background .2s">←</button>
+        <button onclick="scrollTestimonials(1)" style="width:44px;height:44px;border-radius:50%;background:var(--sand);border:1px solid var(--border);cursor:pointer;font-size:18px;transition:background .2s">→</button>
+      </div>
+    </div>
+
+    <div class="testimonials-track" id="testimonials-track">
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"My Ragdoll refuses to sleep anywhere else. I've moved it three times and she follows it. Worth every dirham."</p>
+        <div class="t-author">
+          <div class="t-avatar">👩</div>
+          <div>
+            <div class="t-name">Sara Al Rashidi</div>
+            <div class="t-pet">Cat mum · Dubai</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"Ordered the Cami Round in slate and it matches my living room so perfectly. People think it's from a designer store."</p>
+        <div class="t-author">
+          <div class="t-avatar">👨</div>
+          <div>
+            <div class="t-name">Khalid Mohammed</div>
+            <div class="t-pet">Dog dad · Abu Dhabi</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"The 3D configurator made it so easy. I changed fabrics four times before committing, all live. That's a game changer."</p>
+        <div class="t-author">
+          <div class="t-avatar">👩</div>
+          <div>
+            <div class="t-name">Layla Hassan</div>
+            <div class="t-pet">Bunny parent · Sharjah</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"Arrived in beautiful packaging with a handwritten note. My corgi approves. I approve. Highly recommend."</p>
+        <div class="t-author">
+          <div class="t-avatar">👨</div>
+          <div>
+            <div class="t-name">Ahmed Farooq</div>
+            <div class="t-pet">Corgi dad · Dubai</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card">
+        <div class="t-stars">★★★★★</div>
+        <p class="t-quote">"I bought one for my cat and one for my dog. Now they fight over the small one. Solved the problem by buying a third."</p>
+        <div class="t-author">
+          <div class="t-avatar">👩</div>
+          <div>
+            <div class="t-name">Nour Khalil</div>
+            <div class="t-pet">Multi-pet household · Ajman</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     INSTAGRAM
+═══════════════════════════════════════════════ -->
+<section class="insta-section">
+  <div class="container">
+    <div class="insta-header">
+      <div>
+        <div class="section-label">Follow Along</div>
+        <h2 class="section-title" style="font-size:28px">Real pieces. Real pets.</h2>
+      </div>
+      <a href="https://instagram.com/couch.petato" target="_blank" class="insta-handle">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        @couch.petato
+      </a>
+    </div>
+    <div class="insta-grid stagger">
+      <div class="insta-cell"><span>🛋️</span><div class="insta-overlay">♥</div></div>
+      <div class="insta-cell"><span>🐱</span><div class="insta-overlay">♥</div></div>
+      <div class="insta-cell"><span>🪑</span><div class="insta-overlay">♥</div></div>
+      <div class="insta-cell"><span>🐶</span><div class="insta-overlay">♥</div></div>
+      <div class="insta-cell"><span>📦</span><div class="insta-overlay">♥</div></div>
+      <div class="insta-cell"><span>✨</span><div class="insta-overlay">♥</div></div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     CTA BAND
+═══════════════════════════════════════════════ -->
+<section class="cta-section">
+  <div class="cta-inner reveal scale">
+    <h2 class="cta-title">Ready to spoil them<br>properly?</h2>
+    <p class="cta-sub">Configure a piece in under 2 minutes. Built to order, shipped in 10–14 days, anywhere in the UAE.</p>
+    <div class="cta-actions">
+      <button class="btn-white" onclick="document.getElementById('configure').scrollIntoView({behavior:'smooth'})">
+        Start Configuring →
+      </button>
+      <a href="https://instagram.com/couch.petato" target="_blank" class="btn-ghost-white">
+        See It On Instagram
+      </a>
+    </div>
+  </div>
+</section>
+
+
+<!-- ══════════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════════ -->
+<footer class="footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand-name">
+          <div class="footer-brand-dot"></div>
+          Couch Petato
+        </div>
+        <p class="footer-brand-desc">
+          Handmade pet furniture crafted in the UAE. Every piece is built to order — your size, your colour, your finish.
+        </p>
+        <div class="footer-social">
+          <a href="https://instagram.com/couch.petato" target="_blank" class="footer-social-btn" title="Instagram">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          </a>
+          <a href="#" class="footer-social-btn" title="TikTok">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.3 6.3 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.2a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.69a8.24 8.24 0 0 0 4.83 1.56V6.8a4.85 4.85 0 0 1-1.07-.11z"/></svg>
+          </a>
+          <a href="#" class="footer-social-btn" title="WhatsApp">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Products</h4>
+        <div class="footer-links">
+          <a href="#products" class="footer-link">Cami Round</a>
+          <a href="#products" class="footer-link">Reacher Box</a>
+          <a href="#products" class="footer-link">Lisa Round</a>
+          <a href="#products" class="footer-link">Coco Seater</a>
+          <a href="#products" class="footer-link">Acrylic Box</a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Company</h4>
+        <div class="footer-links">
+          <a href="#story" class="footer-link">Our Story</a>
+          <a href="#configure" class="footer-link">3D Configurator</a>
+          <a href="https://instagram.com/couch.petato" target="_blank" class="footer-link">Instagram</a>
+          <a href="mailto:hello@couchpetato.com" class="footer-link">hello@couchpetato.com</a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Help</h4>
+        <div class="footer-links">
+          <a href="#" class="footer-link">Shipping & Returns</a>
+          <a href="#" class="footer-link">Care Instructions</a>
+          <a href="#" class="footer-link">Size Guide</a>
+          <a href="#" class="footer-link">Custom Orders</a>
+          <a href="/admin" class="footer-link" style="opacity:.3">Product Manager ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <hr class="footer-divider">
+
+    <div class="footer-bottom">
+      <div class="footer-copy">© 2025 Couch Petato LLC · Made with 🧡 in the UAE</div>
+      <div class="footer-badges">
+        <div class="footer-badge">Handmade</div>
+        <div class="footer-badge">UAE Delivery</div>
+        <div class="footer-badge">3D Configured</div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ══════════════════════════════════════════════
+     STICKY BAR
+═══════════════════════════════════════════════ -->
+<div class="sticky-bar" id="sticky-bar">
+  <div>
+    <div class="sticky-bar-text">Configure your piece</div>
+    <div class="sticky-bar-sub">Live pricing · Built to order</div>
+  </div>
+  <button class="btn-sticky" onclick="document.getElementById('configure').scrollIntoView({behavior:'smooth'})">
+    Start Now →
+  </button>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════════ -->
+<script>
+// ─── Cursor glow ───
+const glow = document.getElementById('cursor-glow');
+document.addEventListener('mousemove', e => {
+  glow.style.left = e.clientX + 'px';
+  glow.style.top  = e.clientY + 'px';
+});
+
+// ─── Navbar scroll ───
+const nav = document.getElementById('main-nav');
+window.addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', window.scrollY > 40);
+}, {passive: true});
+
+// ─── Scroll reveal (Intersection Observer) ───
+const revealEls = document.querySelectorAll('.reveal, .stagger');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      e.target.classList.add('visible');
+      io.unobserve(e.target);
+    }
+  });
+}, {threshold: 0.12, rootMargin: '0px 0px -40px 0px'});
+revealEls.forEach(el => io.observe(el));
+
+// ─── Count-up animation ───
+const countEls = document.querySelectorAll('.count-up');
+const countIO = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if(e.isIntersecting) {
+      const el = e.target;
+      const target = parseInt(el.dataset.target);
+      let start = 0;
+      const step = Math.ceil(target / 24);
+      const timer = setInterval(() => {
+        start = Math.min(start + step, target);
+        el.textContent = start;
+        if(start >= target) clearInterval(timer);
+      }, 40);
+      countIO.unobserve(el);
+    }
+  });
+}, {threshold: 0.5});
+countEls.forEach(el => countIO.observe(el));
+
+// ─── Sticky bar ───
+const stickyBar = document.getElementById('sticky-bar');
+const heroSection = document.getElementById('hero');
+window.addEventListener('scroll', () => {
+  const heroBottom = heroSection.getBoundingClientRect().bottom;
+  stickyBar.classList.toggle('visible', heroBottom < 0);
+}, {passive: true});
+
+// ─── Configurator interactions ───
+let currentPrice = 499;
+function selectSwatch(el, name, color) {
+  document.querySelectorAll('#config-swatches .config-swatch').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  // Tint the product view
+  const view = document.getElementById('config-view');
+  view.style.background = `linear-gradient(135deg, ${color}22, ${color}44, #1a1512)`;
+}
+function selectSize(el, size, price) {
+  document.querySelectorAll('#config-sizes .config-size-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  currentPrice = price;
+  animatePrice(price);
+}
+function animatePrice(target) {
+  const el = document.getElementById('config-price');
+  const current = parseInt(el.textContent.replace(/[^0-9]/g,'')) || 0;
+  const diff = target - current;
+  const steps = 20;
+  let i = 0;
+  const timer = setInterval(() => {
+    i++;
+    const val = Math.round(current + diff * (i/steps));
+    el.textContent = 'AED ' + val;
+    if(i >= steps) {clearInterval(timer); el.textContent = 'AED ' + target;}
+  }, 18);
+}
+
+// ─── Testimonials drag scroll ───
+const track = document.getElementById('testimonials-track');
+let isDragging = false, startX = 0, scrollLeft = 0;
+track.addEventListener('mousedown', e => {
+  isDragging = true;
+  startX = e.pageX - track.offsetLeft;
+  scrollLeft = track.scrollLeft;
+  track.style.userSelect = 'none';
+});
+document.addEventListener('mouseup', () => {isDragging = false; track.style.userSelect = '';});
+track.addEventListener('mousemove', e => {
+  if(!isDragging) return;
+  e.preventDefault();
+  const x = e.pageX - track.offsetLeft;
+  track.scrollLeft = scrollLeft - (x - startX) * 1.5;
+});
+function scrollTestimonials(dir) {
+  track.scrollBy({left: dir * 340, behavior: 'smooth'});
+}
+
+// ─── Smooth section link clicks ───
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', e => {
+    const target = document.querySelector(a.getAttribute('href'));
+    if(target) {e.preventDefault(); target.scrollIntoView({behavior: 'smooth'});}
+  });
+});
+
+// ─── Parallax on hero shapes ───
+window.addEventListener('scroll', () => {
+  const y = window.scrollY;
+  document.querySelectorAll('.hero-shape').forEach((el, i) => {
+    el.style.transform = `translateY(${y * (0.1 + i * 0.05)}px)`;
+  });
+}, {passive: true});
+
+// ─── Hero headline animation ───
+document.querySelector('.hero-headline').style.animation = 'fadeUp .9s .15s cubic-bezier(0.16,1,0.3,1) both';
+
+console.log('🛋️ Couch Petato — couchpetato.com loaded');
+</script>
+</body>
+</html>

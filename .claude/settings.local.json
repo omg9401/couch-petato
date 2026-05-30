@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-Process python 2>$null)",
+      "PowerShell(taskkill /f /im python.exe 2>$null; Start-Sleep -Milliseconds 800; Set-Location \"C:\\\\Users\\\\user\\\\Documents\\\\Claude\\\\Projects\\\\Couch Petato\\\\gui\"; Start-Process python -ArgumentList \"app.py\" -WindowStyle Hidden; Start-Sleep -Seconds 2; try{\\(Invoke-WebRequest -Uri http://localhost:5001 -UseBasicParsing\\).StatusCode}catch{\"not up yet\"})",
+      "mcp__Claude_in_Chrome__tabs_context_mcp",
+      "mcp__Claude_in_Chrome__navigate",
+      "mcp__Claude_in_Chrome__read_console_messages",
+      "Bash(netstat -ano)",
+      "Bash(taskkill /PID 13168 /F)",
+      "Bash(taskkill /PID 22124 /F)",
+      "Bash(cmd /c \"taskkill /PID 13168 /F & taskkill /PID 22124 /F\")",
+      "Bash(python app.py)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://127.0.0.1:5001/admin)",
+      "mcp__Claude_in_Chrome__javascript_tool",
+      "PowerShell(Get-NetTCPConnection -LocalPort 5001 -State Listen -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue })",
+      "Bash(python -c \"import apscheduler; print\\('APScheduler OK'\\)\")",
+      "Bash(python -c \"import bs4; print\\('BeautifulSoup OK'\\)\")",
+      "Bash(python -c \"import requests; print\\('requests OK'\\)\")",
+      "Bash(python -c ' *)",
+      "PowerShell($res = Invoke-RestMethod -Uri \"http://localhost:5001/api/products/2/options\" -Method GET; $res.fabric | ConvertTo-Json -Depth 2)",
+      "Bash(python -m py_compile app.py)",
+      "Bash(mkdir \"C:\\\\Users\\\\user\\\\Documents\\\\Claude\\\\Projects\\\\Couch Petato\\\\landing\" 2>nul; mkdir \"C:\\\\Users\\\\user\\\\Documents\\\\Claude\\\\Projects\\\\Couch Petato\\\\.claude\" 2>nul; echo done)",
+      "mcp__Claude_Preview__preview_start",
+      "mcp__mcp-registry__search_mcp_registry",
+      "Bash(start /b python -m http.server 3100 --directory landing)",
+      "mcp__Claude_in_Chrome__browser_batch",
+      "Bash(pip install *)",
+      "Bash(git --version)",
+      "Bash(git config *)"
+    ]
+  }
+}

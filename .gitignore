@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+*.pyo
+database/couch_petato.db
+uploads/
+landing/qr*.png
+node_modules/
+.DS_Store
+Thumbs.db

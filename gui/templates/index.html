@@ -1,0 +1,3374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Couch Petato — Product Manager</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  :root {
+    --sidebar-bg:#111827; --sidebar-hover:#1F2937; --accent:#D97706;
+    --accent-light:#FEF3C7; --surface:#FFF; --bg:#F3F4F6;
+    --text:#111827; --muted:#6B7280; --border:#E5E7EB;
+    --success:#16A34A; --danger:#DC2626; --warning:#D97706;
+    --cp-width:340px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text)}
+
+  /* ── Topbar ── */
+  .topbar{height:52px;background:var(--sidebar-bg);display:flex;align-items:center;
+    padding:0 20px;gap:12px;position:fixed;top:0;left:0;right:0;z-index:100;
+    border-bottom:1px solid #1F2937}
+  .topbar-brand{color:#FFF;font-weight:700;font-size:15px;letter-spacing:.3px}
+  .topbar-sub{color:#9CA3AF;font-size:12px}
+  .topbar-dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+  .topbar-tabs{margin-left:auto;display:flex;gap:4px}
+  .topbar-tab{background:transparent;border:1px solid #374151;color:#9CA3AF;
+    font-size:12px;font-weight:600;padding:4px 14px;border-radius:5px;cursor:pointer;transition:.15s}
+  .topbar-tab:hover{border-color:#6B7280;color:#FFF}
+  .topbar-tab.active{background:var(--accent);border-color:var(--accent);color:#FFF}
+
+  /* ── Layout ── */
+  .app-body{display:flex;height:calc(100vh - 52px);margin-top:52px}
+  .all-products-view{margin-top:52px;padding:28px 32px;overflow-y:auto;height:calc(100vh - 52px)}
+
+  /* ── Sidebar ── */
+  .sidebar{width:260px;min-width:260px;background:var(--sidebar-bg);overflow-y:auto;
+    border-right:1px solid #1F2937;display:flex;flex-direction:column}
+  .sidebar-head{padding:14px 16px 10px;display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid #1F2937}
+  .sidebar-head span{color:#9CA3AF;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+  .btn-new-product{background:var(--accent);border:none;color:#FFF;font-size:12px;font-weight:600;
+    padding:4px 10px;border-radius:5px;cursor:pointer}
+  .btn-new-product:hover{background:#B45309}
+  .tree{flex:1;padding:8px 0}
+  .p-node{padding:9px 12px 9px 14px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    border-left:3px solid transparent;transition:background .12s}
+  .p-node:hover{background:#1F2937}
+  .p-node.active{background:#1F2937;border-left-color:var(--accent)}
+  .p-node-num{color:#9CA3AF;font-size:11px;font-weight:700;min-width:18px}
+  .p-node-name{color:#F9FAFB;font-size:13px;font-weight:500;flex:1}
+  .p-chevron{color:#6B7280;font-size:10px;transition:transform .2s;cursor:pointer;padding:2px 4px}
+  .p-chevron.open{transform:rotate(90deg)}
+  .v-node{padding:7px 12px 7px 36px;cursor:pointer;display:flex;align-items:center;gap:8px;
+    border-left:3px solid transparent;transition:background .12s}
+  .v-node:hover{background:#1F2937}
+  .v-node.active{background:#1F2937;border-left-color:#60A5FA}
+  .v-node-num{color:#6B7280;font-size:11px;min-width:26px}
+  .v-node-name{color:#D1D5DB;font-size:12px;flex:1}
+  .add-variant-btn{padding:6px 12px 6px 36px;color:#6B7280;font-size:11px;cursor:pointer;
+    display:flex;align-items:center;gap:4px}
+  .add-variant-btn:hover{color:var(--accent)}
+  .status-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+  .dot-active{background:#4ADE80}
+  .dot-draft{background:#6B7280}
+  .dot-paused{background:#FCD34D}
+
+  /* ── Main Panel ── */
+  .main-panel{flex:1;overflow-y:auto}
+  #welcome-state{display:flex;flex-direction:column;align-items:center;justify-content:center;
+    height:100%;color:var(--muted);text-align:center;padding:40px}
+  .welcome-icon{font-size:56px;margin-bottom:16px}
+  .welcome-title{font-size:20px;font-weight:600;color:var(--text);margin-bottom:8px}
+
+  /* ── Form Common ── */
+  .form-wrap{padding:24px;max-width:980px}
+  .form-topbar{display:flex;align-items:center;gap:12px;margin-bottom:20px;
+    padding-bottom:16px;border-bottom:1px solid var(--border)}
+  .form-title-block{flex:1}
+  .form-entity-num{color:var(--muted);font-size:12px;font-weight:600;text-transform:uppercase}
+  .form-entity-name{font-size:22px;font-weight:700}
+  .form-actions{display:flex;gap:8px}
+  .btn-save{background:var(--accent);color:#FFF;border:none;padding:8px 20px;
+    border-radius:6px;font-weight:600;font-size:13px;cursor:pointer}
+  .btn-save:hover{background:#B45309}
+  .btn-delete{background:#FFF;color:var(--danger);border:1px solid #FCA5A5;
+    padding:8px 16px;border-radius:6px;font-weight:600;font-size:13px;cursor:pointer}
+  .btn-delete:hover{background:#FEF2F2}
+  .btn-generate{background:#374151;color:#FFF;border:none;padding:7px 12px;
+    border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap}
+  .btn-generate:hover{background:#1F2937}
+  .form-section{background:#FFF;border-radius:10px;padding:20px;margin-bottom:16px;
+    border:1px solid var(--border)}
+  .section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
+    color:var(--muted);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+  .section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+  label.form-label{font-size:12px;font-weight:600;color:#374151;margin-bottom:4px}
+  .form-control,.form-select{font-size:13px;border-color:var(--border);border-radius:6px}
+  .form-control:focus,.form-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px #FEF3C7}
+  .field-note{font-size:11px;color:var(--muted);margin-top:3px}
+  .required-star{color:var(--danger);margin-left:2px}
+
+  /* ── Dynamic Options ── */
+  .options-count-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .options-count-label{font-size:12px;font-weight:600;color:#374151;min-width:120px}
+  .options-count-input{width:70px}
+  .option-items{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .option-item{display:flex;align-items:center;gap:4px}
+  .option-badge{background:#F3F4F6;border:1px solid var(--border);border-radius:6px;
+    padding:3px 8px;font-size:11px;font-weight:600;color:var(--muted);min-width:22px;text-align:center}
+  .option-item input{font-size:12px;padding:4px 8px;border:1px solid var(--border);
+    border-radius:5px;width:140px}
+  .option-item input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px #FEF3C7}
+  .fabric-color-pill{display:inline-flex;align-items:center;gap:6px;background:#F9FAFB;
+    border:1px solid var(--border);border-radius:20px;padding:4px 10px;font-size:11px;font-weight:600}
+  .fabric-count-badge{background:var(--accent);color:#FFF;border-radius:10px;
+    padding:2px 8px;font-size:11px;font-weight:700}
+
+  /* ── File Tabs ── */
+  .file-tabs-nav{display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:14px}
+  .file-tab-btn{background:transparent;border:none;border-bottom:2px solid transparent;
+    padding:6px 14px;font-size:12px;font-weight:600;color:var(--muted);cursor:pointer;
+    margin-bottom:-1px;transition:.15s}
+  .file-tab-btn.active{color:var(--accent);border-bottom-color:var(--accent)}
+  .file-tab-btn:hover:not(.active){color:var(--text)}
+  .file-tab-pane{display:none}
+  .file-tab-pane.active{display:block}
+  .drop-zone{border:2px dashed #D1D5DB;border-radius:10px;padding:24px 20px;
+    text-align:center;color:var(--muted);font-size:13px;
+    transition:border-color .2s,background .2s;cursor:pointer}
+  .drop-zone:hover,.drop-zone.drag-over{border-color:var(--accent);background:var(--accent-light)}
+  .drop-zone .drop-icon{font-size:28px;margin-bottom:6px}
+  .file-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+  .file-thumb{position:relative;width:82px;height:82px;border-radius:8px;overflow:hidden;
+    border:1px solid var(--border);background:#F9FAFB;display:flex;align-items:center;justify-content:center}
+  .file-thumb img{width:100%;height:100%;object-fit:cover}
+  .file-thumb .pdf-icon{font-size:26px}
+  .file-thumb .del-btn{position:absolute;top:3px;right:3px;background:rgba(0,0,0,.55);color:#FFF;
+    border:none;border-radius:50%;width:20px;height:20px;font-size:11px;
+    cursor:pointer;display:none;align-items:center;justify-content:center}
+  .file-thumb:hover .del-btn{display:flex}
+  .file-name{font-size:10px;color:var(--muted);text-align:center;margin-top:3px;
+    max-width:82px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+
+  /* ── Variant Two-Column Layout ── */
+  .variant-outer{display:flex;gap:0;height:calc(100vh - 52px);overflow:hidden}
+  .variant-main{flex:1;overflow-y:auto;padding:24px}
+  .cost-sidebar{width:var(--cp-width);min-width:var(--cp-width);overflow-y:auto;
+    background:#FFF;border-left:1px solid var(--border);padding:0}
+
+  /* ── Cost Panel ── */
+  .cost-panel{padding:16px}
+  .cost-panel-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--muted);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--border);
+    display:flex;align-items:center;gap:8px}
+  .cp-section-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--muted);margin:12px 0 6px;padding-top:8px;border-top:1px solid var(--border)}
+  .cp-row{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0;font-size:12px}
+  .cp-row.indent{padding-left:12px;color:var(--muted)}
+  .cp-row.subtotal{font-weight:700;padding:5px 0;border-top:1px solid var(--border);
+    border-bottom:1px solid var(--border);margin:3px 0;font-size:13px}
+  .cp-row.total{font-weight:700;font-size:14px;color:var(--accent);
+    border-top:2px solid var(--accent);padding-top:8px;margin-top:6px}
+  .cp-val{font-variant-numeric:tabular-nums;font-weight:600;color:#111827}
+  .cp-val.empty{color:#D1D5DB;font-weight:400}
+  .cp-fixed{color:#6B7280}
+  .cp-inputs{background:#F9FAFB;border-radius:8px;padding:12px;margin-bottom:12px;
+    border:1px solid var(--border)}
+  .cp-inputs .section-title{margin-bottom:10px}
+  .cp-inputs label{font-size:11px;font-weight:600;color:#374151;margin-bottom:3px}
+  .cp-inputs .form-control{font-size:12px;padding:5px 8px}
+  .final-price-box{background:var(--accent-light);border:2px solid var(--accent);
+    border-radius:8px;padding:12px;margin-top:12px}
+  .final-price-box label{font-size:11px;font-weight:700;color:#92400E}
+  .final-price-input{font-size:18px;font-weight:700;color:#92400E;text-align:right;
+    background:transparent;border:none;border-bottom:2px solid var(--accent);
+    width:100%;outline:none;padding:4px 0}
+  .customer-price-row{margin-top:8px;padding-top:8px;border-top:1px dashed #F59E0B;
+    font-size:11px;color:#92400E;display:flex;justify-content:space-between}
+  .cp-col-header{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+    color:var(--muted);margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+  .cp-ext-row{display:flex;justify-content:space-between;font-size:11px;padding:2px 0;color:#374151}
+  .cp-ext-row .cp-fixed{color:#6B7280;font-weight:600}
+  .price-block{background:#F9FAFB;border:1px solid var(--border);border-radius:8px;
+    padding:16px;margin-bottom:12px}
+  .price-block-header{font-size:11px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.06em;color:var(--accent);margin-bottom:14px;padding-bottom:8px;
+    border-bottom:2px solid var(--border)}
+  .ext-row{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:4px 0;font-size:12px}
+  .ext-row label{margin:0;color:#374151;min-width:110px}
+  .ext-row .input-group{max-width:110px}
+  .size-block{background:#FFF;border:1px solid var(--border);border-radius:8px;
+    padding:14px;margin-bottom:10px}
+  .size-block-name{font-weight:700;font-size:13px;margin-bottom:10px;color:var(--accent);
+    display:flex;align-items:center;gap:8px}
+  .cushion-block{background:#FFF;border:1px solid var(--border);border-radius:8px;
+    padding:12px;margin-bottom:8px}
+  .cushion-block-name{font-weight:700;font-size:12px;margin-bottom:8px;
+    color:#374151;display:flex;align-items:center;gap:8px}
+  .entry-block{background:#FFF;border:1px solid var(--border);border-radius:8px;
+    padding:12px;margin-bottom:8px}
+  .entry-block-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+  .patterned-badge{background:#FEF3C7;color:#92400E;font-size:10px;font-weight:700;
+    padding:2px 6px;border-radius:4px;text-transform:uppercase}
+  .size-cost-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;
+    background:#F9FAFB;border-radius:6px;padding:10px;margin-top:8px}
+  .size-cost-cell{text-align:center;padding:4px 2px}
+  .size-cost-cell .label{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);line-height:1.3}
+  .size-cost-cell .val{font-weight:700;font-size:12px}
+  .size-block-header{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:0;cursor:default}
+  .size-toggle-btn{background:none;border:none;color:var(--muted);font-size:11px;font-weight:700;
+    padding:2px 7px;border-radius:4px;cursor:pointer;transition:.12s;line-height:1}
+  .size-toggle-btn:hover,.size-toggle-btn.open{color:var(--accent);background:var(--accent-light)}
+  .size-block-body{padding-top:12px}
+  .size-base-costs{background:#F9FAFB;border-radius:6px;padding:10px;margin-bottom:10px;border:1px solid var(--border)}
+  .size-subvars-header{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--muted);margin-bottom:8px;padding-top:4px;border-top:1px solid var(--border)}
+  .subvar-block{background:#FFF;border:1px solid var(--border);border-radius:6px;margin-bottom:6px}
+  .subvar-row{display:flex;align-items:center;gap:8px;padding:7px 12px;flex-wrap:wrap}
+  .subvar-sku{font-family:monospace;font-size:11px;background:#F3F4F6;padding:2px 6px;
+    border-radius:3px;color:#374151;white-space:nowrap;flex-shrink:0}
+  .subvar-label{font-size:12px;color:#374151;flex:1;min-width:80px}
+  .subvar-soc{font-size:11px;font-weight:600;color:var(--accent);white-space:nowrap}
+  .subvar-sp{font-size:11px;font-weight:600;color:#166534;white-space:nowrap}
+  .subvar-expand-btn{background:none;border:none;font-size:13px;color:var(--muted);
+    cursor:pointer;padding:2px 6px;border-radius:4px;flex-shrink:0}
+  .subvar-expand-btn:hover{color:var(--accent)}
+  .subvar-detail{background:#FAFAFA;border-top:1px solid var(--border);padding:10px 12px;display:none}
+  .sv-count-badge{font-size:10px;color:var(--muted);margin-left:auto;white-space:nowrap}
+
+  /* ── Links ── */
+  .link-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)}
+  .link-row:last-child{border-bottom:none}
+  .link-label{font-size:12px;font-weight:600;color:#374151;min-width:90px}
+  .link-url{font-size:12px;color:#2563EB;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .link-del{background:none;border:none;color:#9CA3AF;cursor:pointer;font-size:14px;padding:2px 6px}
+  .link-del:hover{color:var(--danger)}
+  .link-add-row{display:flex;gap:8px;margin-top:10px}
+
+  /* ── Shopify ── */
+  .shopify-check{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:13px}
+  .check-icon{font-size:14px;width:20px;text-align:center}
+  .pass{color:var(--success)} .fail{color:var(--danger)}
+  .btn-push{background:#5C6BC0;color:#FFF;border:none;padding:10px 24px;border-radius:7px;
+    font-weight:700;font-size:14px;cursor:pointer;width:100%;margin-top:12px}
+  .btn-push:hover:not(:disabled){background:#3949AB}
+  .btn-push:disabled{background:#D1D5DB;color:#9CA3AF;cursor:not-allowed}
+  .synced-badge{background:#DCFCE7;color:#166534;border-radius:6px;padding:3px 10px;
+    font-size:11px;font-weight:700;display:inline-block;margin-top:6px}
+
+  /* ── Danger Zone ── */
+  .danger-zone{background:#FEF2F2;border:1px solid #FCA5A5;border-radius:10px;padding:20px;margin-top:8px}
+  .danger-zone-title{font-size:11px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.07em;color:var(--danger);margin-bottom:10px}
+  .danger-zone p{font-size:12px;color:#7F1D1D;margin-bottom:12px}
+  .btn-danger{background:var(--danger);color:#FFF;border:none;padding:9px 20px;
+    border-radius:6px;font-weight:700;font-size:13px;cursor:pointer}
+  .btn-danger:hover{background:#B91C1C}
+
+  /* ── All Products table ── */
+  .all-products-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+  .all-products-header h5{font-size:18px;font-weight:700;margin:0}
+  .ap-table{width:100%;border-collapse:collapse;background:#FFF;border-radius:10px;
+    overflow:hidden;border:1px solid var(--border);font-size:13px}
+  .ap-table th{background:#F9FAFB;font-size:11px;font-weight:700;text-transform:uppercase;
+    letter-spacing:.06em;color:var(--muted);padding:10px 14px;text-align:left;
+    border-bottom:1px solid var(--border)}
+  .ap-table td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle}
+  .ap-table tr:last-child td{border-bottom:none}
+  .ap-product-row:hover td{background:#F9FAFB;cursor:pointer}
+  .ap-expand-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:11px;
+    padding:3px 7px;border-radius:4px;transition:.12s;line-height:1;font-weight:700}
+  .ap-expand-btn:hover,.ap-expand-btn.open{color:var(--accent);background:var(--accent-light)}
+  /* Detail row */
+  .ap-detail-row td{padding:0!important;background:#FAFBFC;border-bottom:2px solid var(--accent-light)!important}
+  .ap-detail-row:hover td{background:#FAFBFC!important;cursor:default}
+  .ap-detail-wrap{padding:12px 16px 16px 16px;border-top:2px solid var(--accent-light)}
+  /* Sub-table */
+  .ap-sub-table{width:100%;border-collapse:collapse;font-size:12px;white-space:nowrap}
+  .ap-sub-table th{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--muted);padding:6px 10px;background:#F3F4F6;border-bottom:1px solid var(--border);white-space:nowrap}
+  .ap-sub-table td{padding:6px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+  .ap-sub-table tbody tr:last-child td{border-bottom:none}
+  .ap-sub-table tbody tr:hover td{background:#FFF9F0}
+  .ap-sub-table .col-sep{width:3px;padding:0!important;background:linear-gradient(to bottom,var(--accent-light),var(--accent-light))}
+  .ap-sub-table .cost-col{text-align:right;font-variant-numeric:tabular-nums}
+  .ap-sub-table .soc-col{font-weight:700;color:var(--accent)}
+  .ap-sub-table .sp-col{font-weight:700;color:#166534}
+  .ap-sub-table .th-sep{background:linear-gradient(to bottom,var(--accent-light),var(--accent-light));width:3px;padding:0!important}
+  /* Options chips below sub-table */
+  .ap-options-bar{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+  .ap-opt-chip{background:#F3F4F6;border:1px solid var(--border);border-radius:20px;
+    padding:3px 10px;font-size:11px;color:#374151;display:inline-flex;align-items:center;gap:4px}
+  .badge-status{font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;text-transform:uppercase}
+  .badge-ACTIVE{background:#DCFCE7;color:#166534}
+  .badge-DRAFT{background:#F3F4F6;color:#374151}
+  .badge-PAUSED{background:#FEF3C7;color:#92400E}
+  .ap-variants-cell{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+  .ap-variant-dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+  .price-range{font-variant-numeric:tabular-nums;font-weight:600}
+
+  /* ── Toast ── */
+  #toast-container{position:fixed;top:64px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+  .toast-msg{padding:10px 16px;border-radius:8px;font-size:13px;font-weight:500;
+    box-shadow:0 4px 12px rgba(0,0,0,.15);animation:slideIn .2s ease}
+  .toast-success{background:#DCFCE7;color:#166534;border-left:4px solid #16A34A}
+  .toast-error{background:#FEE2E2;color:#991B1B;border-left:4px solid #DC2626}
+  .toast-info{background:#DBEAFE;color:#1E40AF;border-left:4px solid #2563EB}
+  @keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:none}}
+
+  .sku-preview-note{font-size:11px;color:var(--accent);font-weight:600;margin-top:4px}
+  .input-group-text{font-size:13px}
+  select.status-select option[value="ACTIVE"]{color:var(--success)}
+  select.status-select option[value="PAUSED"]{color:var(--warning)}
+  ::-webkit-scrollbar{width:5px;height:5px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:#D1D5DB;border-radius:4px}
+
+  /* ── Variation Tree ── */
+  .vt-size{border:2px solid var(--accent);border-radius:10px;margin-bottom:12px}
+  .vt-size-hdr{background:var(--accent-light);padding:10px 14px;display:flex;align-items:center;
+    gap:10px;cursor:pointer;border-radius:8px;user-select:none;flex-wrap:wrap}
+  .vt-size-hdr:hover{background:#FDE68A}
+  .vt-size-body{padding:10px 10px 10px 20px}
+  .vt-finish{border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:#FFF}
+  .vt-finish-hdr{background:#F9FAFB;padding:8px 12px;display:flex;align-items:center;
+    gap:8px;cursor:pointer;border-radius:7px;user-select:none;flex-wrap:wrap}
+  .vt-finish-hdr:hover{background:#F3F4F6}
+  .vt-finish-body{padding:8px 8px 8px 18px}
+  .vt-cushion{border:1px solid #E5E7EB;border-radius:6px;margin-bottom:6px;background:#FAFAFA}
+  .vt-cushion-hdr{background:#F3F4F6;padding:7px 10px;display:flex;align-items:center;
+    gap:6px;cursor:pointer;border-radius:5px;user-select:none;flex-wrap:wrap}
+  .vt-cushion-hdr:hover{background:#E5E7EB}
+  .vt-cushion-body{padding:0}
+  .vt-leaf{padding:7px 14px 7px 14px;border-top:1px solid #F3F4F6;background:#FFF}
+  .vt-leaf-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .vt-fabric-name{font-size:12px;font-weight:600;color:#374151;min-width:100px;flex-shrink:0}
+  .vt-sku{font-family:monospace;font-size:10px;background:#F3F4F6;padding:2px 5px;
+    border-radius:3px;color:#374151;white-space:nowrap;display:block;margin-bottom:2px}
+  .vt-qty-input{width:72px!important;font-size:12px!important}
+  .vt-qty-patterned{border-color:#F59E0B!important;background:#FFFBEB!important}
+  .vt-profit-input{width:66px!important;font-size:12px!important}
+  .vt-pricing{display:flex;gap:8px;flex-wrap:wrap;margin-top:5px;padding:5px 10px;
+    background:#F9FAFB;border-radius:5px;font-size:11px;align-items:center;
+    border:1px solid var(--border)}
+  .vt-p-item{display:flex;flex-direction:column;align-items:center;gap:1px}
+  .vt-p-label{font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+  .vt-p-val{font-weight:700;font-size:12px;color:#374151}
+  .vt-p-val.final{color:var(--accent);font-size:13px}
+  .vt-arrow{color:var(--muted);font-size:11px;align-self:center}
+  .vt-tog{background:none;border:none;color:var(--muted);font-size:11px;padding:1px 5px;
+    cursor:pointer;flex-shrink:0;line-height:1}
+  .vt-tog.open{color:var(--accent)}
+  /* Delete button on size/finish/cushion rows */
+  .btn-def-del{background:none;border:1px solid #FCA5A5;color:#DC2626;font-size:13px;
+    font-weight:700;width:22px;height:22px;border-radius:4px;cursor:pointer;
+    line-height:1;padding:0;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center}
+  .btn-def-del:hover{background:#FEE2E2}
+  /* Final price — larger */
+  .vt-p-val.final{color:var(--accent);font-size:16px!important;font-weight:700}
+  /* All-products column toggle */
+  .col-toggle-bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+  .col-tog-btn{font-size:11px;padding:2px 8px;border-radius:4px;border:1px solid var(--border);
+    background:#fff;cursor:pointer;color:var(--muted)}
+  .col-tog-btn.active{background:var(--accent-light);border-color:var(--accent);color:#92400E;font-weight:600}
+  /* ── Stock badges ── */
+  .stock-row{display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap}
+  .stock-badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;
+    padding:2px 8px;border-radius:10px;white-space:nowrap}
+  .stock-in{background:#DCFCE7;color:#166534;border:1px solid #BBF7D0}
+  .stock-no{background:#FEE2E2;color:#991B1B;border:1px solid #FECACA}
+  .stock-unknown{background:#F3F4F6;color:#6B7280;border:1px solid #E5E7EB}
+  .stock-ts{font-size:10px;color:var(--muted)}
+  .btn-stock-check{background:none;border:1px solid var(--border);color:var(--muted);
+    font-size:11px;padding:1px 7px;border-radius:4px;cursor:pointer;white-space:nowrap}
+  .btn-stock-check:hover{border-color:var(--accent);color:var(--accent)}
+  .btn-stock-check:disabled{opacity:.5;cursor:default}
+  /* ── Variation tree — per-leaf stock units badge ── */
+  .vt-stock-chip{font-size:10px;font-weight:600;padding:1px 7px;border-radius:8px;white-space:nowrap;line-height:1.6}
+  .vt-sc-in{background:#DCFCE7;color:#166534}
+  .vt-sc-low{background:#FEF9C3;color:#854D0E}
+  .vt-sc-no{background:#FEE2E2;color:#991B1B}
+  .vt-sc-na{background:#F3F4F6;color:#9CA3AF}
+</style>
+</head>
+<body>
+
+<!-- Topbar -->
+<nav class="topbar">
+  <div class="topbar-dot"></div>
+  <span class="topbar-brand">Couch Petato</span>
+  <span class="topbar-sub">Product Manager</span>
+  <div class="topbar-tabs">
+    <button class="topbar-tab active" id="tab-btn-products" onclick="switchView('products')">Products</button>
+    <button class="topbar-tab" id="tab-btn-all" onclick="switchView('all')">All Products</button>
+  </div>
+</nav>
+
+<div id="toast-container"></div>
+
+<!-- ══ PRODUCTS VIEW ══ -->
+<div class="app-body" id="view-products">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <span>Products</span>
+      <button class="btn-new-product" onclick="newProduct()">+ New</button>
+    </div>
+    <div class="tree" id="tree"></div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main-panel" id="main-panel">
+
+    <!-- Welcome -->
+    <div id="welcome-state">
+      <div class="welcome-icon">🛋️</div>
+      <div class="welcome-title">Select a product or variant</div>
+      <p style="max-width:320px;font-size:13px">Use the sidebar to navigate, or create a new product to get started.</p>
+      <button class="btn-save mt-2" onclick="newProduct()">+ New Product</button>
+    </div>
+
+    <!-- ── Product Form ── -->
+    <div id="product-form" class="form-wrap" style="display:none">
+      <div class="form-topbar">
+        <div class="form-title-block">
+          <div class="form-entity-num" id="pf-num">Product #—</div>
+          <div class="form-entity-name" id="pf-name">—</div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-save" onclick="saveProduct()">Save</button>
+        </div>
+      </div>
+
+      <!-- Basic Info — identity only -->
+      <div class="form-section">
+        <div class="section-title">Basic Information</div>
+        <div class="row g-3">
+          <div class="col-md-5">
+            <label class="form-label">Product Name <span class="required-star">*</span></label>
+            <input type="text" id="p-name" class="form-control" placeholder="e.g. Cami Round" list="dl-p-name">
+            <datalist id="dl-p-name"></datalist>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Model Code</label>
+            <input type="text" id="p-model-abbr" class="form-control" maxlength="8" placeholder="e.g. CMR" list="dl-p-model-abbr">
+            <datalist id="dl-p-model-abbr"></datalist>
+            <div class="field-note">Auto from name · override if needed</div>
+          </div>
+          <div class="col-md-3">
+            <label class="form-label">Base SKU</label>
+            <div class="input-group">
+              <input type="text" id="p-sku" class="form-control" placeholder="e.g. CP-CMR">
+              <button class="btn-generate" onclick="generateProductSKU()" title="Generate SKU from model code">⚡ Gen</button>
+            </div>
+            <div class="field-note">Click ⚡ Gen when details are complete</div>
+          </div>
+          <div class="col-md-2">
+            <label class="form-label">Status</label>
+            <select id="p-status" class="form-select status-select">
+              <option value="DRAFT">Draft</option>
+              <option value="ACTIVE">Active</option>
+              <option value="PAUSED">Paused</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label">Description <span class="required-star">*</span></label>
+            <textarea id="p-desc" class="form-control" rows="2" placeholder="Product description for Shopify / website listing"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ EXTERNAL COSTS (fixed, applied to every sub-variation) ══ -->
+      <div class="form-section">
+        <div class="section-title">External Costs
+          <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:8px">Applied identically to every sub-variation</span>
+        </div>
+        <div class="row g-2" style="font-size:13px">
+          <div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Box</label><div class="input-group input-group-sm"><span class="input-group-text">AED</span><input type="number" id="p-ext-box" class="form-control" value="30" step="1"></div></div>
+          <div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Bubble Wrap</label><div class="input-group input-group-sm"><span class="input-group-text">AED</span><input type="number" id="p-ext-bubble" class="form-control" value="10" step="1"></div></div>
+          <div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Stickers</label><div class="input-group input-group-sm"><span class="input-group-text">AED</span><input type="number" id="p-ext-stickers" class="form-control" value="15" step="1"></div></div>
+          <div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Emboss Tag</label><div class="input-group input-group-sm"><span class="input-group-text">AED</span><input type="number" id="p-ext-emboss" class="form-control" value="20" step="1"></div></div>
+          <div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Note Card</label><div class="input-group input-group-sm"><span class="input-group-text">AED</span><input type="number" id="p-ext-notecard" class="form-control" value="20" step="1"></div></div>
+          <div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Embroidery Patch</label><div class="input-group input-group-sm"><span class="input-group-text">AED</span><input type="number" id="p-ext-patch" class="form-control" value="20" step="1"></div></div>
+          <div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Shipping (to customer)</label><div class="input-group input-group-sm"><span class="input-group-text">AED</span><input type="number" id="p-ext-shipping" class="form-control" value="50" step="1"></div></div>
+          <div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Product Profit %</label>
+            <div class="input-group input-group-sm">
+              <input type="number" id="p-default-profit" class="form-control" value="60" step="5" min="0" max="500" style="font-weight:700">
+              <span class="input-group-text">%</span>
+            </div>
+            <div class="field-note" style="font-size:10px">On SOC · pre-fills tree · editable per-leaf</div>
+          </div>
+          <div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Ext Costs Profit %</label>
+            <div class="input-group input-group-sm">
+              <input type="number" id="p-ext-profit" class="form-control" value="0" step="5" min="0" max="500">
+              <span class="input-group-text">%</span>
+            </div>
+            <div class="field-note" style="font-size:10px">Applied to packaging + shipping</div>
+          </div>
+          <div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Royalties %</label>
+            <div class="input-group input-group-sm">
+              <input type="number" id="p-royalties" class="form-control" value="7" step="1" min="0" max="100">
+              <span class="input-group-text">%</span>
+            </div>
+            <div class="field-note" style="font-size:10px">Applied to (Product SP + Ext SP)</div>
+          </div>
+          <div class="col-12" style="font-size:12px;color:var(--muted);margin-top:4px;border-top:1px dashed var(--border);padding-top:6px">
+            Ext costs total: <strong id="ext-costs-total">—</strong> &nbsp;·&nbsp; Labour rate: <strong>AED 20 / hr·person</strong> &nbsp;·&nbsp; VAT: <strong>5%</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ FABRIC LIBRARY (max 6, defined once — qty asked per variation) ══ -->
+      <div class="form-section">
+        <div class="section-title">Fabric Library
+          <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:8px">Max 6 · price/m set here · qty entered per variation below</span>
+        </div>
+        <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+          <span style="font-size:12px;font-weight:600;color:#374151">Fabrics</span>
+          <input type="number" id="p-fabric-count" class="form-control options-count-input" min="1" max="6" value="1" placeholder="1">
+          <button class="btn-secondary" style="padding:4px 12px;font-size:12px;border-radius:6px;border:1px solid var(--border);background:#fff;cursor:pointer" onclick="refreshVariationTree()">↻ Refresh Tree</button>
+          <div id="warwick-login-status" style="display:flex;align-items:center;gap:6px;margin-left:auto">
+            <span style="font-size:11px;color:var(--muted)" id="warwick-status-text">Warwick: not tested</span>
+            <button style="font-size:11px;padding:3px 9px;border-radius:5px;border:1px solid var(--border);background:#fff;cursor:pointer" onclick="testWarwickLogin()">🔐 Test Login</button>
+          </div>
+        </div>
+        <div id="p-fabric-fields"></div>
+      </div>
+
+      <!-- ══ VARIANT DEFINITIONS ══ -->
+      <div class="form-section">
+        <div class="section-title">Variant Definitions
+          <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:8px">Define names here — the tree below auto-generates every combination</span>
+        </div>
+
+        <!-- Sizes (max 4) -->
+        <div class="price-block mb-3">
+          <div class="price-block-header">📐 Sizes <span style="font-size:11px;opacity:.7">max 4</span></div>
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span style="font-size:12px;font-weight:600;color:#374151">How many sizes?</span>
+            <input type="number" id="p-size-count" class="form-control options-count-input" min="1" max="4" value="1" placeholder="1">
+          </div>
+          <div id="p-size-defs"></div>
+        </div>
+
+        <!-- Carcass Base Finishes (max 4) -->
+        <div class="price-block mb-3">
+          <div class="price-block-header">🪵 Carcass Base Finishes <span style="font-size:11px;opacity:.7">max 4 · manufactured externally · cost varies per size</span></div>
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span style="font-size:12px;font-weight:600;color:#374151">Finish options</span>
+            <input type="number" id="p-finish-count" class="form-control options-count-input" min="1" max="4" value="1" placeholder="1">
+          </div>
+          <div id="p-finish-defs"></div>
+        </div>
+
+        <!-- Cushion Variations (max 4) -->
+        <div class="price-block">
+          <div class="price-block-header">🪑 Cushion Variations <span style="font-size:11px;opacity:.7">max 4 · done in-house · labour + foam asked per variation in tree</span></div>
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span style="font-size:12px;font-weight:600;color:#374151">Cushion configs</span>
+            <input type="number" id="p-cushion-count" class="form-control options-count-input" min="1" max="4" value="1" placeholder="1">
+          </div>
+          <div id="p-cushion-defs"></div>
+        </div>
+      </div>
+
+      <!-- ══ VARIATION TREE (4 levels: Size → Finish → Cushion → Fabric) ══ -->
+      <div class="form-section" id="variation-tree-section" style="display:none">
+        <div class="section-title">Variation Tree
+          <span id="tree-combo-count" style="font-size:11px;font-weight:400;color:var(--muted);margin-left:8px"></span>
+        </div>
+        <div id="variation-tree"></div>
+      </div>
+
+      <!-- Product Specifications -->
+      <div class="form-section">
+        <div class="section-title">Product Specifications
+          <span style="font-size:11px;font-weight:400;color:var(--muted);margin-left:8px">Weight &amp; volume are per-size (enter in Size definitions above)</span>
+        </div>
+        <div class="row g-3">
+          <div class="col-md-5">
+            <label class="form-label">Wood / Body Manufacturer</label>
+            <input type="text" id="p-manufacturer" class="form-control" placeholder="e.g. Symphony Interiors" list="dl-p-manufacturer">
+            <datalist id="dl-p-manufacturer">
+              <option value="Symphony Interiors">
+              <option value="In-House">
+            </datalist>
+            <div class="field-note">Who makes the frame / wooden base</div>
+          </div>
+          <div class="col-md-5">
+            <label class="form-label">Default Dimensions</label>
+            <input type="text" id="p-dims" class="form-control" placeholder="50cm × 50cm × 50cm" list="dl-p-dims">
+            <datalist id="dl-p-dims"></datalist>
+            <div class="field-note">Override per size in the Size definitions above</div>
+          </div>
+          <!-- hidden fields kept for backward-compat with backend -->
+          <input type="hidden" id="p-weight" value="">
+          <input type="hidden" id="p-cubic" value="">
+        </div>
+      </div>
+
+      <!-- Files (3 tabs) -->
+      <div class="form-section">
+        <div class="section-title">Product Files</div>
+        <div class="file-tabs-nav">
+          <button class="file-tab-btn active" onclick="switchFileTab('product','photo',this)">📷 Photos</button>
+          <button class="file-tab-btn" onclick="switchFileTab('product','drawing',this)">📐 Drawings</button>
+          <button class="file-tab-btn" onclick="switchFileTab('product','render',this)">🎮 3D Renders</button>
+        </div>
+        <div id="p-filetab-photo" class="file-tab-pane active">
+          <div class="drop-zone" id="p-drop-photo"><div class="drop-icon">📷</div>
+            <div>Drag & drop product photos here</div>
+            <div style="font-size:11px;margin-top:3px">or <span style="color:var(--accent);cursor:pointer" onclick="document.getElementById('p-input-photo').click()">browse</span></div>
+            <input type="file" id="p-input-photo" multiple accept=".png,.jpg,.jpeg" style="display:none">
+          </div>
+          <div class="file-grid" id="p-grid-photo"></div>
+        </div>
+        <div id="p-filetab-drawing" class="file-tab-pane">
+          <div class="drop-zone" id="p-drop-drawing"><div class="drop-icon">📐</div>
+            <div>Drag & drop technical drawings here</div>
+            <div style="font-size:11px;margin-top:3px">or <span style="color:var(--accent);cursor:pointer" onclick="document.getElementById('p-input-drawing').click()">browse</span></div>
+            <input type="file" id="p-input-drawing" multiple accept=".png,.jpg,.jpeg,.pdf" style="display:none">
+          </div>
+          <div class="file-grid" id="p-grid-drawing"></div>
+        </div>
+        <div id="p-filetab-render" class="file-tab-pane">
+          <div class="drop-zone" id="p-drop-render"><div class="drop-icon">🎮</div>
+            <div>Drag & drop 3D renders here</div>
+            <div style="font-size:11px;margin-top:3px">or <span style="color:var(--accent);cursor:pointer" onclick="document.getElementById('p-input-render').click()">browse</span></div>
+            <input type="file" id="p-input-render" multiple accept=".png,.jpg,.jpeg" style="display:none">
+          </div>
+          <div class="file-grid" id="p-grid-render"></div>
+        </div>
+      </div>
+
+      <!-- General References -->
+      <div class="form-section">
+        <div class="section-title">General References</div>
+        <div class="field-note" style="margin-bottom:10px">Inspiration, mood board, competitor refs. Supplier-specific links live inside each fabric/wood option card above.</div>
+        <div id="p-links-list"></div>
+        <div class="link-add-row">
+          <input type="text" id="p-link-label" class="form-control form-control-sm" placeholder="Label" style="max-width:140px" list="dl-p-link-label">
+          <datalist id="dl-p-link-label"><option value="Inspiration"><option value="Mood Board"><option value="Competitor"><option value="Reference"></datalist>
+          <input type="url" id="p-link-url" class="form-control form-control-sm" placeholder="https://...">
+          <button class="btn-save" style="padding:4px 12px;font-size:12px" onclick="addLink('product')">Add</button>
+        </div>
+      </div>
+
+      <!-- Shopify Sync (Product) -->
+      <div class="form-section" id="p-shopify-section">
+        <div class="section-title" style="display:flex;align-items:center;gap:10px">
+          <svg width="18" height="18" viewBox="0 0 109 124" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0"><path d="M74.7 14.8s-1.4.4-3.7 1.1c-.4-1.3-1-2.8-1.8-4.3-2.6-5-6.5-7.7-11.1-7.7-.3 0-.6 0-.9.1-.1-.2-.3-.3-.4-.5-2.1-2.3-4.8-3.4-8.1-3.3-6.3.2-12.6 4.7-17.7 12.7-3.6 5.7-6.3 12.8-7.1 18.3l-15.6 4.8c-4.6 1.4-4.7 1.5-5.3 5.9C2.5 45.2 0 64.5 0 64.5l55.7 9.7 30.2-7.5S74.7 15.4 74.7 14.8zM57.2 20.2c-3.8 1.2-7.9 2.4-12 3.7.8-5.7 2.5-11.2 5-14.8.8-1.3 2-2.7 3.4-3.6 1.3 2.8 1.6 6.6 1.6 10.7v4z" fill="#95BF47"/><path d="M58.6 16.5c-1.4-4.3-3.8-6.3-6-6.3h-.5c-.2-.3-.5-.5-.7-.8-1.5-1.7-3.5-2.4-5.8-2.4-4.9.1-9.7 3.7-13.7 10-2.8 4.5-4.9 10.1-5.5 14.5l-9.5 2.9 4.3-1.3L57.2 20.2v-3.7h1.4z" fill="#5E8E3E"/><path d="M55 74.2L85.9 66.7 74.7 14.8l-17.5 5.4L55 74.2z" fill="#95BF47"/></svg>
+          Shopify Sync
+        </div>
+        <div id="p-shopify-status" style="margin-bottom:12px"></div>
+        <div id="p-shopify-checks" style="margin-bottom:12px"></div>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+          <button class="btn-push" id="p-btn-push" onclick="pushProductToShopify()" disabled>
+            Push All Variants to Shopify
+          </button>
+          <button class="btn-secondary" id="p-btn-sync-inv" onclick="syncShopifyInventory()"
+            style="padding:8px 14px;font-size:13px;background:transparent;border:1px solid #6366F1;border-radius:7px;cursor:pointer;color:#6366F1;display:none"
+            title="Update Shopify inventory quantities based on current fabric stock (no full re-push)">
+            📦 Sync Inventory
+          </button>
+          <button class="btn-secondary" id="p-btn-validate" onclick="runProductShopifyValidation()" style="padding:8px 16px;font-size:13px;background:transparent;border:1px solid var(--muted);border-radius:7px;cursor:pointer;color:var(--muted)">
+            Re-check
+          </button>
+        </div>
+        <div class="field-note" style="margin-top:8px;text-align:center">Save product first. Pushes the product + all sub-variations as Shopify variants with Size / Colour / Wood options.</div>
+      </div>
+
+      <!-- Danger Zone -->
+      <div class="danger-zone">
+        <div class="danger-zone-title">⚠ Danger Zone</div>
+        <p>Permanently delete this product and all its variants, files, and data. This cannot be undone.</p>
+        <button class="btn-danger" onclick="deleteProduct()">Delete This Product</button>
+      </div>
+      <div style="height:32px"></div>
+    </div><!-- /product-form -->
+
+
+    <!-- ── Variant Form (single panel — cost is in right sidebar) ── -->
+    <div id="variant-form" style="display:none;height:calc(100vh - 52px);overflow:hidden">
+      <div class="variant-outer">
+
+        <!-- Left: Variant fields -->
+        <div class="variant-main">
+          <div class="form-topbar">
+            <div class="form-title-block">
+              <div class="form-entity-num" id="vf-num">Variant #—</div>
+              <div class="form-entity-name" id="vf-name">—</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px" id="vf-parent"></div>
+            </div>
+            <div class="form-actions">
+              <button class="btn-save" onclick="saveVariant()">Save</button>
+              <button class="btn-delete" onclick="deleteVariant()">Delete</button>
+            </div>
+          </div>
+
+          <!-- Variant Config -->
+          <div class="form-section">
+            <div class="section-title">Variant Configuration</div>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Fabric Colour Name <span class="required-star">*</span></label>
+                <input type="text" id="v-colour-name" class="form-control" placeholder="e.g. Beige" list="dl-v-colour-name">
+                <datalist id="dl-v-colour-name"></datalist>
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Fabric Type</label>
+                <select id="v-fabric-type" class="form-select">
+                  <option value="PLN">PLN — Plain</option>
+                  <option value="PAT">PAT — Pattern</option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Supplier Colour Code <span class="required-star">*</span></label>
+                <input type="text" id="v-fabric-code" class="form-control" placeholder="e.g. 14-Vela" list="dl-v-fabric-code">
+                <datalist id="dl-v-fabric-code"></datalist>
+                <div class="field-note">Supplier's code — used in SKU</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Supplier</label>
+                <input type="text" id="v-supplier-abbr" class="form-control" placeholder="e.g. MRC or Mercis" list="dl-v-supplier-abbr">
+                <datalist id="dl-v-supplier-abbr">
+                  <option value="MRC"><option value="Mercis">
+                  <option value="FBL"><option value="Fabric Library">
+                  <option value="SI"><option value="Symphony Interiors">
+                </datalist>
+                <div class="field-note">MRC · FBL · SI</div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Finish Code</label>
+                <input type="text" id="v-finish-code" class="form-control" maxlength="6" placeholder="e.g. OAK" list="dl-v-finish-code">
+                <datalist id="dl-v-finish-code"></datalist>
+                <div class="field-note">Wood/metal finish from sample board</div>
+              </div>
+              <div class="col-md-5">
+                <label class="form-label">Variant SKU</label>
+                <div class="input-group">
+                  <input type="text" id="v-sku" class="form-control" placeholder="Auto-generated">
+                  <button class="btn-generate" onclick="generateVariantSKU()" title="Generate SKU from components">⚡ Gen</button>
+                </div>
+                <div class="sku-preview-note" id="v-sku-preview"></div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Wood Option</label>
+                <input type="text" id="v-wood" class="form-control" placeholder="e.g. Oak Stain" list="dl-v-wood">
+                <datalist id="dl-v-wood"></datalist>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Leg Option</label>
+                <input type="text" id="v-leg" class="form-control" placeholder="e.g. Type A" list="dl-v-leg">
+                <datalist id="dl-v-leg"></datalist>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Fabric Swatch Link</label>
+                <input type="url" id="v-fabric-link" class="form-control" placeholder="https://...">
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Status</label>
+                <select id="v-status" class="form-select status-select">
+                  <option value="DRAFT">Draft</option>
+                  <option value="ACTIVE">Active</option>
+                  <option value="PAUSED">Paused</option>
+                </select>
+              </div>
+              <div class="col-9">
+                <label class="form-label">Notes</label>
+                <textarea id="v-notes" class="form-control" rows="2" placeholder="Internal notes"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Files (3 tabs) -->
+          <div class="form-section">
+            <div class="section-title">Variant Files</div>
+            <div class="file-tabs-nav">
+              <button class="file-tab-btn active" onclick="switchFileTab('variant','photo',this)">📷 Photos</button>
+              <button class="file-tab-btn" onclick="switchFileTab('variant','drawing',this)">📐 Drawings</button>
+              <button class="file-tab-btn" onclick="switchFileTab('variant','render',this)">🎮 3D Renders</button>
+            </div>
+            <div id="v-filetab-photo" class="file-tab-pane active">
+              <div class="drop-zone" id="v-drop-photo"><div class="drop-icon">📷</div>
+                <div>Photos of this colour/finish variant</div>
+                <div style="font-size:11px;margin-top:3px">or <span style="color:var(--accent);cursor:pointer" onclick="document.getElementById('v-input-photo').click()">browse</span></div>
+                <input type="file" id="v-input-photo" multiple accept=".png,.jpg,.jpeg" style="display:none">
+              </div>
+              <div class="file-grid" id="v-grid-photo"></div>
+            </div>
+            <div id="v-filetab-drawing" class="file-tab-pane">
+              <div class="drop-zone" id="v-drop-drawing"><div class="drop-icon">📐</div>
+                <div>Technical drawings</div>
+                <div style="font-size:11px;margin-top:3px">or <span style="color:var(--accent);cursor:pointer" onclick="document.getElementById('v-input-drawing').click()">browse</span></div>
+                <input type="file" id="v-input-drawing" multiple accept=".png,.jpg,.jpeg,.pdf" style="display:none">
+              </div>
+              <div class="file-grid" id="v-grid-drawing"></div>
+            </div>
+            <div id="v-filetab-render" class="file-tab-pane">
+              <div class="drop-zone" id="v-drop-render"><div class="drop-icon">🎮</div>
+                <div>3D renders of this variant</div>
+                <div style="font-size:11px;margin-top:3px">or <span style="color:var(--accent);cursor:pointer" onclick="document.getElementById('v-input-render').click()">browse</span></div>
+                <input type="file" id="v-input-render" multiple accept=".png,.jpg,.jpeg" style="display:none">
+              </div>
+              <div class="file-grid" id="v-grid-render"></div>
+            </div>
+          </div>
+
+          <!-- Links -->
+          <div class="form-section">
+            <div class="section-title">Reference Links</div>
+            <div id="v-links-list"></div>
+            <div class="link-add-row">
+              <input type="text" id="v-link-label" class="form-control form-control-sm" placeholder="Label" style="max-width:130px" list="dl-v-link-label">
+              <datalist id="dl-v-link-label"><option value="Swatch"><option value="Supplier Page"><option value="Reference"></datalist>
+              <input type="url" id="v-link-url" class="form-control form-control-sm" placeholder="https://...">
+              <button class="btn-save" style="padding:4px 12px;font-size:12px" onclick="addLink('variant')">Add</button>
+            </div>
+          </div>
+
+          <!-- Shopify -->
+          <div class="form-section">
+            <div class="section-title">Shopify</div>
+            <div id="shopify-checks"></div>
+            <div id="shopify-synced" style="display:none">
+              <span class="synced-badge">✓ Synced to Shopify</span>
+              <div class="field-note" id="shopify-sync-date" style="margin-top:4px"></div>
+            </div>
+            <button class="btn-push" id="btn-push" onclick="pushToShopify()" disabled>Push to Shopify</button>
+            <div class="field-note" style="margin-top:8px;text-align:center">Save before pushing. All required fields must be complete.</div>
+          </div>
+          <div style="height:32px"></div>
+        </div><!-- /variant-main -->
+
+        <!-- Right: Cost Sidebar -->
+        <div class="cost-sidebar">
+          <div class="cost-panel">
+            <div class="cost-panel-title">💰 Cost Breakdown</div>
+
+            <!-- Two-column inputs -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+
+              <!-- LEFT: Product Costs -->
+              <div class="cp-inputs" style="margin-bottom:0">
+                <div class="cp-col-header">PRODUCT COSTS</div>
+                <div class="mb-2">
+                  <label>Wood / Material</label>
+                  <div class="input-group input-group-sm">
+                    <span class="input-group-text">AED</span>
+                    <input type="number" id="v-material" class="form-control pricing-input" step="1" placeholder="600">
+                  </div>
+                </div>
+                <div class="mb-2">
+                  <label>Fabric qty (m)</label>
+                  <input type="number" id="v-fabric-qty" class="form-control form-control-sm pricing-input" step="0.5" placeholder="1.5">
+                </div>
+                <div class="mb-2">
+                  <label>Rate (AED/m)</label>
+                  <input type="number" id="v-fabric-rate" class="form-control form-control-sm pricing-input" step="1" placeholder="50">
+                </div>
+                <div class="mb-2">
+                  <label>Labour (hrs)</label>
+                  <input type="number" id="v-labour-hrs" class="form-control form-control-sm pricing-input" step="0.5" placeholder="4">
+                </div>
+                <div class="mb-0">
+                  <label>Persons</label>
+                  <input type="number" id="v-labour-persons" class="form-control form-control-sm pricing-input" value="1" min="1" max="10">
+                  <div class="field-note">AED 20 / person·hr</div>
+                </div>
+              </div>
+
+              <!-- RIGHT: External Costs -->
+              <div class="cp-inputs" style="margin-bottom:0">
+                <div class="cp-col-header">EXTERNAL COSTS</div>
+                <div class="cp-ext-row"><span>Box</span><span class="cp-fixed">30</span></div>
+                <div class="cp-ext-row"><span>Bubble wrap</span><span class="cp-fixed">10</span></div>
+                <div class="cp-ext-row"><span>Stickers</span><span class="cp-fixed">15</span></div>
+                <div class="cp-ext-row"><span>Emboss tag</span><span class="cp-fixed">20</span></div>
+                <div class="cp-ext-row"><span>Note card</span><span class="cp-fixed">20</span></div>
+                <div class="cp-ext-row"><span>Patch</span><span class="cp-fixed">20</span></div>
+                <div class="cp-ext-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:4px;font-weight:700">
+                  <span>Packaging</span><span>115</span>
+                </div>
+                <div class="cp-ext-row"><span>Shipping</span><span class="cp-fixed">100</span></div>
+                <div class="cp-ext-row" style="border-top:1px solid var(--border);margin-top:4px;padding-top:4px;font-weight:700">
+                  <span>Total ext.</span><span id="c-ext">215</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Profit % -->
+            <div class="cp-inputs" style="margin-bottom:10px">
+              <div style="display:flex;align-items:center;gap:8px">
+                <label style="font-size:11px;font-weight:600;white-space:nowrap;margin:0">Profit %</label>
+                <input type="number" id="v-profit-pct" class="form-control form-control-sm pricing-input"
+                       style="width:72px" step="5" min="0" max="500" value="60" placeholder="60">
+                <span style="font-size:11px;color:var(--muted)">on product cost</span>
+                <span class="cp-val" id="c-profit-amt" style="margin-left:auto;font-size:12px">—</span>
+              </div>
+            </div>
+
+            <!-- Breakdown rows -->
+            <div class="cp-section-label">Product costs</div>
+            <div class="cp-row indent"><span>Material</span><span class="cp-val" id="c-mat">—</span></div>
+            <div class="cp-row indent"><span>Fabric</span><span class="cp-val" id="c-fabric">—</span></div>
+            <div class="cp-row indent"><span>Labour</span><span class="cp-val" id="c-labour">—</span></div>
+            <div class="cp-row subtotal"><span>SOC</span><span class="cp-val" id="c-soc">—</span></div>
+            <div class="cp-row"><span>Profit (<span id="c-pct-lbl">60</span>%)</span><span class="cp-val" id="c-profit">—</span></div>
+            <div class="cp-row subtotal"><span>Product SP</span><span class="cp-val" id="c-psp">—</span></div>
+
+            <div class="cp-section-label">After external costs</div>
+            <div class="cp-row"><span>+ External (215)</span><span class="cp-val" id="c-listed">—</span></div>
+
+            <div class="cp-section-label">Fees & Tax</div>
+            <div class="cp-row">
+              <span>Royalties 7%</span>
+              <span style="display:flex;flex-direction:column;align-items:flex-end">
+                <span class="cp-val" id="c-royalties">—</span>
+                <span style="font-size:10px;color:var(--muted)" id="c-royalties-lbl"></span>
+              </span>
+            </div>
+            <div class="cp-row">
+              <span>VAT 5%</span>
+              <span style="display:flex;flex-direction:column;align-items:flex-end">
+                <span class="cp-val" id="c-vat">—</span>
+                <span style="font-size:10px;color:var(--muted)" id="c-vat-lbl"></span>
+              </span>
+            </div>
+            <div class="cp-row subtotal"><span>Suggested SP</span><span class="cp-val" id="c-withvat">—</span></div>
+
+            <!-- Final Price (psychology override) -->
+            <div class="final-price-box">
+              <label>Final Selling Price (AED) <span class="required-star">*</span></label>
+              <div style="font-size:10px;color:#92400E;margin-bottom:4px">Adjust for psychology pricing (e.g. 499 instead of 503)</div>
+              <div class="input-group mt-1">
+                <span class="input-group-text" style="font-weight:700;background:transparent;border-color:#F59E0B">AED</span>
+                <input type="number" id="v-final-price" class="final-price-input form-control" step="0.01" placeholder="0.00">
+              </div>
+              <div class="customer-price-row">
+                <span>Customer total (+ AED 50 shipping)</span>
+                <span id="c-customer"><b>AED —</b></span>
+              </div>
+            </div>
+          </div>
+        </div><!-- /cost-sidebar -->
+
+      </div>
+    </div><!-- /variant-form -->
+
+  </main>
+</div><!-- /view-products -->
+
+
+<!-- ══ ALL PRODUCTS VIEW ══ -->
+<div id="view-all" class="all-products-view" style="display:none">
+  <div class="all-products-header">
+    <h5>All Products</h5>
+    <button class="btn-save" onclick="loadSummary()">↻ Refresh</button>
+  </div>
+  <table class="ap-table" id="ap-table">
+    <thead>
+      <tr>
+        <th style="width:36px"></th>
+        <th>#</th>
+        <th>Product Name</th>
+        <th>Model</th>
+        <th>Base SKU</th>
+        <th>Manufacturer</th>
+        <th>Status</th>
+        <th>Variants</th>
+        <th>Price Range (AED)</th>
+      </tr>
+    </thead>
+    <tbody id="ap-tbody"></tbody>
+  </table>
+</div>
+
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  SKU Generator  (mirrors sku_generator.py)
+// ═══════════════════════════════════════════════════════════
+const _SUP = {'mercis':'MRC','fabric library':'FBL','symphony interiors':'SI','symphony':'SI'};
+const _MDL = {'cami round':'CMR','reacher box':'RCH','lisa round':'LSR','coco seater':'CCS','acrylic box':'ACB'};
+
+function _jsSplitWords(n){
+  return n.trim().toUpperCase().split(/[\s\-_/]+/).filter(w=>w);
+}
+function _jsFirstAlnum(w){
+  for(const ch of w){if(/[A-Z0-9]/.test(ch))return ch;}
+  return '';
+}
+function jsModelAbbr(n){
+  if(!n)return'';
+  const k=n.trim().toLowerCase();
+  if(_MDL[k])return _MDL[k];
+  // include numbers fully, take first letter of word tokens
+  const words=_jsSplitWords(n);
+  return words.map(w=>/^\d+$/.test(w)?w:_jsFirstAlnum(w)).filter(Boolean).join('').slice(0,8);
+}
+function jsSupplierAbbr(s){
+  if(!s)return'';
+  const k=s.trim().toLowerCase();
+  if(_SUP[k])return _SUP[k];
+  if(/^[A-Z]{2,5}$/.test(s.trim()))return s.trim().toUpperCase();
+  return _jsSplitWords(s).filter(w=>!/^\d+$/.test(w)).map(_jsFirstAlnum).filter(Boolean).join('').slice(0,5);
+}
+function jsColorAbbr(c){
+  if(!c)return'';
+  const parts=c.trim().split(/[-\s]+/).filter(Boolean);
+  const nums=parts.filter(x=>/^\d+$/.test(x));
+  const names=parts.filter(x=>!/^\d+$/.test(x));
+  // multi-word → first char of each word; single word → first 3 chars
+  const wordAbbr=names.length>1?names.map(w=>w[0]||'').join(''):(names[0]||'').slice(0,3);
+  return(nums.join('')+wordAbbr).toUpperCase();
+}
+function jsVariantSKU(m,s,c,f){
+  const p=['CP'];
+  if(m)p.push(m.toUpperCase());
+  if(s)p.push(jsSupplierAbbr(s));
+  if(c)p.push(jsColorAbbr(c));
+  if(f)p.push(f.toUpperCase());
+  return p.length>1?p.join('-'):'';
+}
+
+// ─── SKU Disambiguation ───────────────────────────────────
+// Returns {name: uniqueAbbr, ...} — starts from abbrev10() then extends
+// character-by-character on the cleaned string until all abbreviations are unique.
+function getUniqueAbbrevs(names){
+  if(!names||!names.length)return{};
+  // cleaned[i] = stripped alnum uppercase version used for extension
+  const cleans=names.map(n=>(n||'').trim().replace(/[^a-zA-Z0-9]/g,'').toUpperCase());
+  // start with abbrev10
+  const abbrs=names.map(n=>abbrev10(n));
+  // Iteratively resolve collisions (max 20 passes)
+  for(let pass=0;pass<20;pass++){
+    // group indices by current abbr
+    const groups={};
+    abbrs.forEach((a,i)=>{(groups[a]=groups[a]||[]).push(i);});
+    let anyCollision=false;
+    for(const idxs of Object.values(groups)){
+      if(idxs.length<=1)continue;
+      anyCollision=true;
+      idxs.forEach((i,pos)=>{
+        const clean=cleans[i];
+        const cur=abbrs[i];
+        const nextLen=cur.length+1;
+        if(nextLen<=clean.length){
+          abbrs[i]=clean.slice(0,nextLen);
+        }else{
+          // cleaned string exhausted — append position to force uniqueness
+          abbrs[i]=clean+(pos+1);
+        }
+      });
+    }
+    if(!anyCollision)break;
+  }
+  const result={};
+  names.forEach((n,i)=>{result[n]=abbrs[i];});
+  return result;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  State
+// ═══════════════════════════════════════════════════════════
+let products=[], current=null, expanded=new Set();
+
+// ═══════════════════════════════════════════════════════════
+//  Toast
+// ═══════════════════════════════════════════════════════════
+function toast(msg,type='info'){
+  const el=document.createElement('div');
+  el.className=`toast-msg toast-${type}`;
+  el.textContent=msg;
+  document.getElementById('toast-container').appendChild(el);
+  setTimeout(()=>el.remove(),3200);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  API
+// ═══════════════════════════════════════════════════════════
+async function api(method,path,body){
+  const opts={method,headers:{'Content-Type':'application/json'}};
+  if(body)opts.body=JSON.stringify(body);
+  const r=await fetch(path,opts);
+  return r.json();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  View switching
+// ═══════════════════════════════════════════════════════════
+function switchView(v){
+  document.getElementById('view-products').style.display = v==='products'?'flex':'none';
+  document.getElementById('view-all').style.display      = v==='all'?'block':'none';
+  document.getElementById('tab-btn-products').classList.toggle('active',v==='products');
+  document.getElementById('tab-btn-all').classList.toggle('active',v==='all');
+  if(v==='all')loadSummary();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Predictive text (localStorage history)
+// ═══════════════════════════════════════════════════════════
+const HIST_KEY='cp_fhist';
+function getHist(id){return JSON.parse(localStorage.getItem(HIST_KEY)||'{}')[id]||[]}
+function addHist(id,v){
+  if(!v||v.length<2)return;
+  const s=JSON.parse(localStorage.getItem(HIST_KEY)||'{}');
+  const arr=s[id]||[];
+  if(!arr.includes(v))arr.unshift(v);
+  s[id]=arr.slice(0,25);
+  localStorage.setItem(HIST_KEY,JSON.stringify(s));
+}
+function populateDL(inputId){
+  const dl=document.getElementById('dl-'+inputId);
+  if(!dl)return;
+  const hist=getHist(inputId);
+  // Only add dynamic entries; static <option> entries stay
+  const existing=[...dl.querySelectorAll('option[data-dyn]')].map(o=>o.value);
+  hist.forEach(v=>{
+    if(!existing.includes(v)&&![...dl.querySelectorAll('option')].map(o=>o.value).includes(v)){
+      const o=document.createElement('option');
+      o.value=v; o.dataset.dyn='1';
+      dl.appendChild(o);
+    }
+  });
+}
+// Save all text/textarea field values on form save
+function saveHistFromForm(prefix,fields){
+  fields.forEach(id=>{
+    const el=document.getElementById(prefix+id);
+    if(el&&el.value)addHist(prefix+id,el.value);
+  });
+}
+// Wire focus listeners on all datalist inputs
+document.querySelectorAll('input[list]').forEach(el=>{
+  el.addEventListener('focus',()=>populateDL(el.id));
+});
+
+// ═══════════════════════════════════════════════════════════
+//  Load & Render Tree
+// ═══════════════════════════════════════════════════════════
+async function loadProducts(){
+  products=await api('GET','/api/products');
+  renderTree();
+}
+function renderTree(){
+  const tree=document.getElementById('tree');
+  tree.innerHTML='';
+  products.forEach(p=>{
+    const open=expanded.has(p.id);
+    const pn=document.createElement('div');
+    pn.className='p-node'+(current?.id===p.id&&current?.type==='product'?' active':'');
+    pn.innerHTML=`
+      <span class="p-chevron ${open?'open':''}" data-pid="${p.id}">▶</span>
+      <span class="status-dot dot-${(p.status||'DRAFT').toLowerCase()}"></span>
+      <span class="p-node-num">${p.product_number}</span>
+      <span class="p-node-name">${p.name||'Untitled'}</span>`;
+    pn.querySelector('.p-chevron').addEventListener('click',e=>{
+      e.stopPropagation();
+      expanded.has(p.id)?expanded.delete(p.id):expanded.add(p.id);
+      renderTree();
+    });
+    pn.addEventListener('click',()=>selectProduct(p));
+    tree.appendChild(pn);
+    if(open){
+      (p.variants||[]).forEach(v=>{
+        const vn=document.createElement('div');
+        vn.className='v-node'+(current?.id===v.id&&current?.type==='variant'?' active':'');
+        const lbl=v.fabric_color_name?`${v.fabric_color_name} ${v.fabric_type||''}`.trim():'Untitled';
+        vn.innerHTML=`
+          <span class="v-node-num">${v.variant_number}</span>
+          <span class="status-dot dot-${(v.status||'DRAFT').toLowerCase()}"></span>
+          <span class="v-node-name">${lbl}</span>`;
+        vn.addEventListener('click',()=>selectVariant(v,p));
+        tree.appendChild(vn);
+      });
+      const ab=document.createElement('div');
+      ab.className='add-variant-btn';
+      ab.textContent='+ Add Variant';
+      ab.addEventListener('click',()=>newVariant(p));
+      tree.appendChild(ab);
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Show panels
+// ═══════════════════════════════════════════════════════════
+function showPanel(w){
+  document.getElementById('welcome-state').style.display = w==='welcome'?'':'none';
+  document.getElementById('product-form').style.display  = w==='product'?'':'none';
+  document.getElementById('variant-form').style.display  = w==='variant'?'':'none';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Dynamic Option Fields
+// ═══════════════════════════════════════════════════════════
+function renderOptionFields(containerId, count, type, existing=[]){
+  const c=document.getElementById(containerId);
+  if(!c)return;
+  c.innerHTML='';
+  for(let i=0;i<count;i++){
+    const wrap=document.createElement('div');
+    wrap.className='option-item';
+    const badge=document.createElement('span');
+    badge.className='option-badge';
+    badge.textContent=i+1;
+    const inp=document.createElement('input');
+    inp.type='text';
+    inp.className='form-control';
+    inp.placeholder=`${type.charAt(0).toUpperCase()+type.slice(1)} ${i+1}`;
+    inp.value=existing[i]||'';
+    inp.dataset.type=type;
+    inp.dataset.idx=i;
+    inp.setAttribute('list',`dl-opt-${type}`);
+    wrap.appendChild(badge);
+    wrap.appendChild(inp);
+    c.appendChild(wrap);
+  }
+  // Create shared datalist for type
+  let dl=document.getElementById(`dl-opt-${type}`);
+  if(!dl){dl=document.createElement('datalist');dl.id=`dl-opt-${type}`;document.body.appendChild(dl);}
+  const hist=getHist(`opt-${type}`);
+  dl.innerHTML=hist.map(v=>`<option value="${v}">`).join('');
+}
+
+function getOptionValues(containerId){
+  const c=document.getElementById(containerId);
+  if(!c)return[];
+  return [...c.querySelectorAll('input')].map(i=>i.value.trim()).filter(Boolean);
+}
+
+// ── Wire count inputs (min 1) ──
+document.getElementById('p-fabric-count')?.addEventListener('input', function () {
+  let val = Math.max(1, Math.min(parseInt(this.value) || 1, 6)); this.value = val;
+  renderFabricEntries(val, getFabricEntryData());
+  refreshVariationTree();
+});
+document.getElementById('p-size-count')?.addEventListener('input', function () {
+  let val = Math.max(1, Math.min(parseInt(this.value) || 1, 4)); this.value = val;
+  renderSizeDefs(val, getSizeDefs());
+  refreshVariationTree();
+});
+document.getElementById('p-finish-count')?.addEventListener('input', function () {
+  let val = Math.max(1, Math.min(parseInt(this.value) || 1, 4)); this.value = val;
+  renderFinishDefs(val, getFinishDefs());
+  refreshVariationTree();
+});
+document.getElementById('p-cushion-count')?.addEventListener('input', function () {
+  let val = Math.max(1, Math.min(parseInt(this.value) || 1, 4)); this.value = val;
+  renderCushionDefs(val, getCushionDefs());
+  refreshVariationTree();
+});
+// Ext costs + profit fields + royalties → live total + re-price
+['p-ext-box','p-ext-bubble','p-ext-stickers','p-ext-emboss',
+ 'p-ext-notecard','p-ext-patch','p-ext-shipping',
+ 'p-default-profit','p-ext-profit','p-royalties'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => {
+    updateExtCostsTotal();
+    refreshVariationTree();
+  });
+});
+
+// Live model name → abbr
+document.getElementById('p-name')?.addEventListener('input', function () {
+  const el = document.getElementById('p-model-abbr');
+  if (!el || el.dataset.manuallyEdited === '1') return;
+  const abbr = jsModelAbbr(this.value);
+  el.value = abbr; el._lastAuto = abbr;
+});
+document.getElementById('p-model-abbr')?.addEventListener('input', function () {
+  if (this.value !== (this._lastAuto || '')) this.dataset.manuallyEdited = '1';
+  else this.dataset.manuallyEdited = '';
+});
+
+// ─── Fabric / Wood / Leg Entries ───
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');}
+
+// Shared datalist builder for dynamic fields — populates from history
+function buildDL(id, staticOpts=[]){
+  let dl=document.getElementById(id);
+  if(!dl){dl=document.createElement('datalist');dl.id=id;document.body.appendChild(dl);}
+  const hist=getHist(id.replace('dl-',''));
+  const allVals=new Set([...staticOpts,...hist]);
+  dl.innerHTML=[...allVals].map(v=>`<option value="${esc(v)}">`).join('');
+  return id;
+}
+
+function stockBadgeHtml(status, metres, updatedAt){
+  let cls='stock-unknown', icon='⚪', label='Unknown';
+  if(status==='in_stock'){cls='stock-in';icon='🟢';label=metres!=null?`In Stock (${parseFloat(metres).toFixed(0)}m)`:'In Stock';}
+  else if(status==='no_stock'){cls='stock-no';icon='🔴';label=metres!=null&&metres>0?`Low Stock (${parseFloat(metres).toFixed(0)}m)`:'No Stock';}
+  let tsHtml='';
+  if(updatedAt){
+    try{
+      const d=new Date(updatedAt);
+      tsHtml=`<span class="stock-ts">Updated: ${d.toLocaleDateString()} ${d.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'})}</span>`;
+    }catch(e){}
+  }
+  return `<span class="stock-badge ${cls}">${icon} ${label}</span>${tsHtml}`;
+}
+
+function renderFabricEntries(count,existing=[]){
+  const c=document.getElementById('p-fabric-fields');if(!c)return;c.innerHTML='';
+  buildDL('dl-fab-value');
+  buildDL('dl-fab-supplier',['Mercis','Fabric Library','Warwick','Symphony Interiors']);
+  buildDL('dl-fab-code');
+  for(let i=0;i<count;i++){
+    const ex=existing[i]||{};
+    const optId=ex.id||null;
+    const hasLink=!!(ex.link&&ex.link.trim());
+    const block=document.createElement('div');block.className='entry-block';block.dataset.idx=i;
+    if(optId)block.dataset.optId=optId;
+    // Store stock data as data attrs so getFabricEntryData() can pass them to the variation tree
+    if(ex.stock_metres!=null&&ex.stock_metres!==undefined&&ex.stock_metres!=='')block.dataset.stockMetres=ex.stock_metres;
+    if(ex.stock_status)block.dataset.stockStatus=ex.stock_status;
+    block.innerHTML=`
+      <div class="entry-block-header">
+        <span class="option-badge">${i+1}</span>
+        <input type="text" class="form-control form-control-sm" data-field="value"
+          value="${esc(ex.value||'')}" placeholder="Colour name e.g. Beige" style="max-width:160px;font-weight:600"
+          list="dl-fab-value">
+        <div class="form-check d-flex align-items-center gap-1 ms-2">
+          <input class="form-check-input mt-0" type="checkbox" data-field="is_patterned" ${ex.is_patterned?'checked':''}>
+          <label class="form-check-label" style="font-size:11px;cursor:pointer">Patterned</label>
+        </div>
+        ${ex.is_patterned?'<span class="patterned-badge">PATTERNED</span>':''}
+      </div>
+      <div class="row g-2">
+        <div class="col-md-3"><label class="form-label" style="font-size:11px">Supplier</label>
+          <input type="text" class="form-control form-control-sm" data-field="supplier"
+            value="${esc(ex.supplier||'')}" placeholder="e.g. Mercis" list="dl-fab-supplier"></div>
+        <div class="col-md-2"><label class="form-label" style="font-size:11px">Fabric Code</label>
+          <input type="text" class="form-control form-control-sm" data-field="code"
+            value="${esc(ex.code||'')}" placeholder="e.g. 14-Vela" list="dl-fab-code"></div>
+        <div class="col-md-2"><label class="form-label" style="font-size:11px">Price / m (AED)</label>
+          <input type="number" class="form-control form-control-sm p-pricing-input" data-field="cost"
+            value="${ex.cost||''}" step="1" placeholder="50"></div>
+        <div class="col-md-4"><label class="form-label" style="font-size:11px">Supplier Link</label>
+          <div class="input-group input-group-sm">
+            <input type="url" class="form-control" data-field="link" value="${esc(ex.link||'')}" placeholder="https://...">
+            <a class="btn btn-outline-secondary" style="font-size:11px;padding:0 8px" href="${esc(ex.link)||'#'}" target="_blank" data-lbtn title="Open">🔗</a>
+          </div></div>
+      </div>
+      <div class="stock-row" data-stock-row>
+        ${stockBadgeHtml(ex.stock_status, ex.stock_metres, ex.stock_updated_at)}
+        ${(optId&&hasLink)?`<button class="btn-stock-check" data-opt-id="${optId}">↻ Check</button>`
+          :optId?'<span class="stock-ts" style="font-style:italic">Add a supplier link then save to enable stock check</span>'
+          :'<span class="stock-ts" style="font-style:italic">Save product first to enable stock tracking</span>'}
+      </div>`;
+    // Live tree updates on any field change
+    block.querySelectorAll('[data-field="value"],[data-field="supplier"],[data-field="code"],[data-field="cost"]')
+      .forEach(inp=>inp.addEventListener('input', refreshVariationTree));
+    block.querySelector('[data-field="is_patterned"]').addEventListener('change',function(){
+      const hdr=block.querySelector('.entry-block-header');
+      hdr.querySelector('.patterned-badge')?.remove();
+      if(this.checked){const b=document.createElement('span');b.className='patterned-badge';b.textContent='PATTERNED';hdr.appendChild(b);}
+      refreshVariationTree();
+    });
+    block.querySelector('[data-lbtn]').addEventListener('click',function(e){
+      const lv=block.querySelector('[data-field="link"]').value;
+      if(lv){this.href=lv;}else{e.preventDefault();}
+    });
+    // Stock check button — use event delegation on the block so re-renders don't break it
+    block.addEventListener('click', async function(e){
+      const btn=e.target.closest('.btn-stock-check');
+      if(!btn)return;
+      const oid=btn.dataset.optId;if(!oid)return;
+      btn.disabled=true; btn.textContent='↻ …';
+      try{
+        const res=await api('POST',`/api/fabric/refresh-stock/${oid}`);
+        if(res.ok){
+          const row=block.querySelector('[data-stock-row]');
+          if(row){
+            // Replace just the badge+timestamp (keep button)
+            const existingBtn=row.querySelector('.btn-stock-check');
+            row.innerHTML=stockBadgeHtml(res.stock_status,res.stock_metres,res.stock_updated_at);
+            if(existingBtn){existingBtn.textContent='↻ Check';existingBtn.disabled=false;row.appendChild(existingBtn);}
+          }
+          // Update block data attrs so the variation tree picks up the new stock
+          if(res.stock_metres!=null)block.dataset.stockMetres=res.stock_metres;
+          else delete block.dataset.stockMetres;
+          block.dataset.stockStatus=res.stock_status||'unknown';
+          // Refresh variation tree leaves to show updated units
+          refreshVariationTree();
+          toast('Stock updated','success');
+        }else{
+          toast(res.error||'Stock check failed','error');
+          btn.disabled=false; btn.textContent='↻ Check';
+        }
+      }catch(e){
+        toast('Stock check error','error');
+        btn.disabled=false; btn.textContent='↻ Check';
+      }
+    });
+    c.appendChild(block);
+  }
+  refreshVariationTree();
+}
+function getFabricEntryData(){
+  const c=document.getElementById('p-fabric-fields');if(!c)return[];
+  return[...c.querySelectorAll('.entry-block')].map(b=>({
+    value:b.querySelector('[data-field="value"]')?.value.trim()||'',
+    supplier:b.querySelector('[data-field="supplier"]')?.value.trim()||'',
+    code:b.querySelector('[data-field="code"]')?.value.trim()||'',
+    cost:parseFloat(b.querySelector('[data-field="cost"]')?.value)||null,
+    link:b.querySelector('[data-field="link"]')?.value.trim()||'',
+    is_patterned:b.querySelector('[data-field="is_patterned"]')?.checked?1:0,
+    // Stock data stored as data attrs; set during renderFabricEntries and updated on stock check
+    stock_metres: b.dataset.stockMetres!=null&&b.dataset.stockMetres!==''?parseFloat(b.dataset.stockMetres):null,
+    stock_status: b.dataset.stockStatus||null,
+  }));
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Abbreviation helpers
+// ═══════════════════════════════════════════════════════════
+function abbrev10(str){
+  if(!str)return'';
+  const clean=str.trim().replace(/[^a-zA-Z0-9]/g,'').toUpperCase();
+  if(clean.length<=10)return clean;
+  // keep full digit-runs, first letter of alpha-runs
+  let out='';
+  for(const p of str.trim().split(/[\s\-_/]+/)){
+    if(!p)continue;
+    const segs=p.match(/(\d+|[a-zA-Z]+)/g)||[];
+    for(const s of segs) out+=/^\d+$/.test(s)?s:s[0];
+  }
+  return out.toUpperCase().slice(0,10);
+}
+function supplierCode(name){
+  if(!name)return'';
+  const lo=name.trim().toLowerCase();
+  if(lo==='fabric library')return'FL';
+  if(lo==='mercis')return'MRC';
+  if(lo==='warwick')return'WW';
+  return name.trim().split(/[\s\-_/]+/).filter(Boolean).map(w=>(w[0]||'').toUpperCase()).join('').slice(0,5);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Ext Costs Total
+// ═══════════════════════════════════════════════════════════
+function updateExtCostsTotal(){
+  const total=['p-ext-box','p-ext-bubble','p-ext-stickers','p-ext-emboss',
+               'p-ext-notecard','p-ext-patch','p-ext-shipping']
+    .reduce((s,id)=>s+(parseFloat(document.getElementById(id)?.value)||0),0);
+  const el=document.getElementById('ext-costs-total');
+  if(el)el.textContent=`AED ${total.toFixed(0)}`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Size Defs
+// ═══════════════════════════════════════════════════════════
+function renderSizeDefs(count,data=[]){
+  const c=document.getElementById('p-size-defs');if(!c)return;c.innerHTML='';
+  for(let i=0;i<count;i++){
+    const ex=data[i]||{};
+    const row=document.createElement('div');row.className='d-flex align-items-center gap-2 mb-2 def-row';
+    row.innerHTML=`<span class="option-badge">${i+1}</span>
+      <input type="text" class="form-control form-control-sm" data-field="value"
+        value="${esc(ex.value||'')}" placeholder="e.g. Small / Large" style="max-width:140px;font-weight:600">
+      <input type="text" class="form-control form-control-sm" data-field="dimensions"
+        value="${esc(ex.dimensions||'')}" placeholder="40×40 cm" style="max-width:110px" title="Dimensions">
+      <div class="input-group input-group-sm" style="max-width:90px" title="Weight (optional — varies per size)">
+        <input type="number" class="form-control" data-field="weight_kg"
+          value="${ex.weight_kg||''}" step="0.1" min="0" placeholder="kg">
+        <span class="input-group-text" style="font-size:10px">kg</span>
+      </div>
+      <button class="btn-def-del" type="button" title="Remove this size">×</button>`;
+    row.querySelector('[data-field="value"]').addEventListener('input',refreshVariationTree);
+    row.querySelector('.btn-def-del').addEventListener('click',()=>{
+      row.remove();
+      const cnt=document.getElementById('p-size-count');
+      if(cnt)cnt.value=Math.max(1,document.getElementById('p-size-defs').querySelectorAll('.def-row').length);
+      refreshVariationTree();
+    });
+    c.appendChild(row);
+  }
+}
+function getSizeDefs(){
+  const c=document.getElementById('p-size-defs');if(!c)return[];
+  return[...c.querySelectorAll('.def-row')].map(row=>({
+    value:      row.querySelector('[data-field="value"]')?.value.trim()||'',
+    dimensions: row.querySelector('[data-field="dimensions"]')?.value.trim()||'',
+    weight_kg:  parseFloat(row.querySelector('[data-field="weight_kg"]')?.value)||null,
+  }));
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Finish Defs (Carcass Base Finish)
+// ═══════════════════════════════════════════════════════════
+function renderFinishDefs(count,data=[]){
+  const c=document.getElementById('p-finish-defs');if(!c)return;c.innerHTML='';
+  buildDL('dl-finish-mfr',['Symphony Interiors','In-House','Custom Manufacturer']);
+  for(let i=0;i<count;i++){
+    const ex=data[i]||{};
+    const block=document.createElement('div');block.className='entry-block mb-2';
+    block.innerHTML=`<div class="entry-block-header">
+        <span class="option-badge">${i+1}</span>
+        <input type="text" class="form-control form-control-sm" data-field="value"
+          value="${esc(ex.value||'')}" placeholder="e.g. White Oak" style="max-width:180px;font-weight:600">
+        <button class="btn-def-del ms-auto" type="button" title="Remove this finish">×</button>
+      </div>
+      <div class="row g-2 mt-1">
+        <div class="col-md-5"><label class="form-label" style="font-size:11px">Description</label>
+          <textarea class="form-control form-control-sm" data-field="description" rows="2"
+            placeholder="e.g. Solid oak frame with white stain">${esc(ex.description||'')}</textarea></div>
+        <div class="col-md-4"><label class="form-label" style="font-size:11px">Manufacturer</label>
+          <input type="text" class="form-control form-control-sm" data-field="manufacturer"
+            value="${esc(ex.manufacturer||ex.supplier||'')}" placeholder="e.g. Symphony Interiors"
+            list="dl-finish-mfr"></div>
+      </div>`;
+    block.querySelectorAll('[data-field="value"],[data-field="manufacturer"]')
+      .forEach(inp=>inp.addEventListener('input',refreshVariationTree));
+    block.querySelector('.btn-def-del').addEventListener('click',()=>{
+      block.remove();
+      const cnt=document.getElementById('p-finish-count');
+      if(cnt)cnt.value=Math.max(1,document.getElementById('p-finish-defs').querySelectorAll('.entry-block').length);
+      refreshVariationTree();
+    });
+    c.appendChild(block);
+  }
+}
+function getFinishDefs(){
+  const c=document.getElementById('p-finish-defs');if(!c)return[];
+  return[...c.querySelectorAll('.entry-block')].map(b=>({
+    value:        b.querySelector('[data-field="value"]')?.value.trim()||'',
+    description:  b.querySelector('[data-field="description"]')?.value.trim()||'',
+    manufacturer: b.querySelector('[data-field="manufacturer"]')?.value.trim()||'',
+  }));
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Cushion Defs
+// ═══════════════════════════════════════════════════════════
+function renderCushionDefs(count,data=[]){
+  const c=document.getElementById('p-cushion-defs');if(!c)return;c.innerHTML='';
+  buildDL('dl-cushion-def',['No Cushion','Single Cushion','Double Cushion','Bolster','Triple Cushion']);
+  for(let i=0;i<count;i++){
+    const ex=data[i]||{};
+    const row=document.createElement('div');row.className='d-flex align-items-center gap-2 mb-2 def-row';
+    row.innerHTML=`<span class="option-badge">${i+1}</span>
+      <input type="text" class="form-control form-control-sm" data-field="value"
+        value="${esc(ex.value||'')}" placeholder="e.g. No Cushion / Single Cushion"
+        style="max-width:220px;font-weight:600" list="dl-cushion-def">
+      <button class="btn-def-del" type="button" title="Remove this cushion config">×</button>`;
+    row.querySelector('[data-field="value"]').addEventListener('input',refreshVariationTree);
+    row.querySelector('.btn-def-del').addEventListener('click',()=>{
+      row.remove();
+      const cnt=document.getElementById('p-cushion-count');
+      if(cnt)cnt.value=Math.max(1,document.getElementById('p-cushion-defs').querySelectorAll('.def-row').length);
+      refreshVariationTree();
+    });
+    c.appendChild(row);
+  }
+}
+function getCushionDefs(){
+  const c=document.getElementById('p-cushion-defs');if(!c)return[];
+  return[...c.querySelectorAll('[data-field="value"]')].map(inp=>({value:inp.value.trim()}));
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Variation Tree — state maps (populated on product load)
+// ═══════════════════════════════════════════════════════════
+let _finishCostMap={};    // 'size|||finish' → carcass cost AED
+let _cushionDetailMap={}; // 'size|||finish|||cushion' → {labour_hours,labour_persons,foam_cost}
+let _leafMap={};          // 'size|||finish|||cushion|||fabric' → {id,fabric_qty,profit_pct}
+
+function refreshVariationTree(){
+  const sizes   =getSizeDefs().filter(s=>s.value);
+  const finishes=getFinishDefs().filter(f=>f.value);
+  const cushions=getCushionDefs().filter(c=>c.value);
+  const fabrics =getFabricEntryData().filter(f=>f.value);
+  const total=sizes.length*finishes.length*cushions.length*fabrics.length;
+  const sec=document.getElementById('variation-tree-section');
+  const treeEl=document.getElementById('variation-tree');
+  const cntEl=document.getElementById('tree-combo-count');
+  if(!total){if(sec)sec.style.display='none';return;}
+  if(sec)sec.style.display='block';
+  if(cntEl)cntEl.textContent=`${total} combination${total!==1?'s':''} (${sizes.length}×${finishes.length}×${cushions.length}×${fabrics.length})`;
+  const extTotal=['p-ext-box','p-ext-bubble','p-ext-stickers','p-ext-emboss',
+    'p-ext-notecard','p-ext-patch','p-ext-shipping']
+    .reduce((s,id)=>s+(parseFloat(document.getElementById(id)?.value)||0),0);
+  const modelCode=v('p-model-abbr')||jsModelAbbr(v('p-name'));
+  // Pre-compute unique abbreviations for each level to avoid SKU collisions
+  const abbrMaps={
+    sizes: getUniqueAbbrevs(sizes.map(s=>s.value)),
+    fins:  getUniqueAbbrevs(finishes.map(f=>f.value)),
+    cus:   getUniqueAbbrevs(cushions.map(c=>c.value)),
+  };
+  renderVariationTree(sizes,finishes,cushions,fabrics,treeEl,extTotal,modelCode,abbrMaps);
+}
+
+function renderVariationTree(sizes,finishes,cushions,fabrics,container,extTotal,modelCode,abbrMaps){
+  container.innerHTML='';
+  sizes.forEach(sz=>{
+    const sizeEl=document.createElement('div');sizeEl.className='vt-size';
+    const sHdr=document.createElement('div');sHdr.className='vt-size-hdr';
+    sHdr.innerHTML=`<button class="vt-tog" type="button">▶</button>
+      <span style="font-size:13px;font-weight:700;color:#92400E">📐 ${esc(sz.value)}</span>
+      ${sz.dimensions?`<span style="font-size:11px;color:var(--muted)">${esc(sz.dimensions)}</span>`:''}`;
+    const sBody=document.createElement('div');sBody.className='vt-size-body';sBody.style.display='none';
+    const sTog=sHdr.querySelector('.vt-tog');
+    sTog.addEventListener('click',function(e){
+      e.stopPropagation();const open=sBody.style.display!=='none';
+      sBody.style.display=open?'none':'block';this.textContent=open?'▶':'▼';this.classList.toggle('open',!open);
+    });
+    sHdr.addEventListener('click',function(e){if(e.target.tagName!=='INPUT')sTog.click();});
+
+    finishes.forEach(fn=>{
+      const finishEl=document.createElement('div');finishEl.className='vt-finish';
+      const fcKey=`${sz.value}|||${fn.value}`;
+      const savedCarc=_finishCostMap[fcKey]??'';
+      const fHdr=document.createElement('div');fHdr.className='vt-finish-hdr';
+      fHdr.innerHTML=`<button class="vt-tog" type="button">▶</button>
+        <span style="font-size:12px;font-weight:700;color:#374151">🪵 ${esc(fn.value)}</span>
+        ${fn.manufacturer?`<span style="font-size:11px;color:var(--muted)">(${esc(fn.manufacturer)})</span>`:''}
+        <span style="font-size:11px;color:var(--muted);margin-left:6px">Carcass:</span>
+        <div class="input-group input-group-sm" style="max-width:108px;flex-shrink:0">
+          <span class="input-group-text" style="font-size:11px">AED</span>
+          <input type="number" class="form-control vt-carcass-input" data-fckey="${esc(fcKey)}"
+            value="${savedCarc}" step="1" placeholder="—">
+        </div>`;
+      const fBody=document.createElement('div');fBody.className='vt-finish-body';fBody.style.display='none';
+      const fTog=fHdr.querySelector('.vt-tog');
+      fTog.addEventListener('click',function(e){
+        e.stopPropagation();const open=fBody.style.display!=='none';
+        fBody.style.display=open?'none':'block';this.textContent=open?'▶':'▼';this.classList.toggle('open',!open);
+      });
+      fHdr.addEventListener('click',function(e){if(e.target.tagName!=='INPUT')fTog.click();});
+      fHdr.querySelector('.vt-carcass-input').addEventListener('input',function(){
+        _finishCostMap[this.dataset.fckey]=parseFloat(this.value)||0;
+        fBody.querySelectorAll('.vt-leaf').forEach(l=>updateLeafPricing(l,extTotal,modelCode));
+      });
+
+      cushions.forEach(cu=>{
+        const cushEl=document.createElement('div');cushEl.className='vt-cushion';
+        const cdKey=`${sz.value}|||${fn.value}|||${cu.value}`;
+        const sCD=_cushionDetailMap[cdKey]||{};
+        const cHdr=document.createElement('div');cHdr.className='vt-cushion-hdr';
+        cHdr.innerHTML=`<button class="vt-tog" type="button">▶</button>
+          <span style="font-size:12px;font-weight:700;color:#374151">🪑 ${esc(cu.value)}</span>
+          <span style="font-size:11px;color:var(--muted);margin-left:4px">Labour:</span>
+          <input type="number" class="form-control form-control-sm vt-lab-hrs" data-cdkey="${esc(cdKey)}"
+            value="${sCD.labour_hours??''}" step="0.5" placeholder="hrs" style="width:60px;font-size:11px">
+          <span style="font-size:11px;color:var(--muted)">h ×</span>
+          <input type="number" class="form-control form-control-sm vt-lab-pers" data-cdkey="${esc(cdKey)}"
+            value="${sCD.labour_persons??1}" min="1" style="width:46px;font-size:11px">
+          <span style="font-size:11px;color:var(--muted)">p &nbsp;Foam:</span>
+          <div class="input-group input-group-sm" style="max-width:90px;flex-shrink:0">
+            <span class="input-group-text" style="font-size:11px">AED</span>
+            <input type="number" class="form-control vt-foam" data-cdkey="${esc(cdKey)}"
+              value="${sCD.foam_cost??''}" step="1" placeholder="—">
+          </div>`;
+        const cBody=document.createElement('div');cBody.className='vt-cushion-body';cBody.style.display='none';
+        const cTog=cHdr.querySelector('.vt-tog');
+        cTog.addEventListener('click',function(e){
+          e.stopPropagation();const open=cBody.style.display!=='none';
+          cBody.style.display=open?'none':'block';this.textContent=open?'▶':'▼';this.classList.toggle('open',!open);
+        });
+        cHdr.addEventListener('click',function(e){if(e.target.tagName!=='INPUT')cTog.click();});
+        cHdr.querySelectorAll('.vt-lab-hrs,.vt-lab-pers,.vt-foam').forEach(inp=>{
+          inp.addEventListener('input',function(){
+            const key=this.dataset.cdkey;
+            _cushionDetailMap[key]={
+              labour_hours:  parseFloat(cHdr.querySelector('.vt-lab-hrs').value)||0,
+              labour_persons:parseInt(cHdr.querySelector('.vt-lab-pers').value)||1,
+              foam_cost:     parseFloat(cHdr.querySelector('.vt-foam').value)||0,
+            };
+            cBody.querySelectorAll('.vt-leaf').forEach(l=>updateLeafPricing(l,extTotal,modelCode));
+          });
+        });
+
+        fabrics.forEach(fab=>{
+          const leafKey=`${sz.value}|||${fn.value}|||${cu.value}|||${fab.value}`;
+          const sLF=_leafMap[leafKey]||{};
+          const isPat=fab.is_patterned;
+          // Plain fabric qty: inherit from another finish combo for same (size,cushion,fabric) if not saved
+          let defQty=sLF.fabric_qty??'';
+          if(!isPat&&defQty===''){
+            for(const of_ of finishes){
+              if(of_.value!==fn.value){
+                const ok=`${sz.value}|||${of_.value}|||${cu.value}|||${fab.value}`;
+                if(_leafMap[ok]?.fabric_qty!=null){defQty=_leafMap[ok].fabric_qty;break;}
+              }
+            }
+          }
+          const globalProfit=parseFloat(document.getElementById('p-default-profit')?.value)||60;
+          const defProfit=sLF.profit_pct??globalProfit;
+          const leafSKU=buildLeafSKU(modelCode,sz.value,fn.value,cu.value,fab.supplier,fab.code,fab.value,abbrMaps);
+          const fabSupCode=supplierCode(fab.supplier);
+
+          const leaf=document.createElement('div');
+          leaf.className='vt-leaf';
+          leaf.dataset.leafKey=leafKey;
+          leaf.dataset.leafId=sLF.id||'';
+          leaf.dataset.fabRate=fab.cost||0;
+          leaf.dataset.isPat=isPat?'1':'0';
+          leaf.dataset.fckey=fcKey;
+          leaf.dataset.cdkey=cdKey;
+          // Stock data: carried from fabric entry, used to compute units available per variant
+          if(fab.stock_metres!=null&&fab.stock_metres!=='')leaf.dataset.stockMetres=fab.stock_metres;
+          if(fab.stock_status)leaf.dataset.stockStatus=fab.stock_status;
+
+          leaf.innerHTML=`<div class="vt-leaf-row">
+              <div style="min-width:120px;flex-shrink:0">
+                <span class="vt-sku">${esc(leafSKU)}</span>
+                <span class="vt-fabric-name">
+                  ${fabSupCode?`<span style="font-size:10px;color:var(--muted);font-weight:400">${esc(fabSupCode)}</span> `:''}
+                  ${esc(fab.value)}
+                  ${isPat?'<span class="patterned-badge" style="font-size:9px;margin-left:3px">PAT</span>':''}
+                </span>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;font-size:11px">
+                <span style="color:var(--muted)">Qty:</span>
+                <input type="number" class="form-control form-control-sm vt-qty-input${isPat?' vt-qty-patterned':''}"
+                  value="${defQty}" step="${isPat?'0.25':'0.5'}" min="0"
+                  placeholder="${isPat?'⚠':'—'}" title="${isPat?'Patterned — must enter manually':'Metres of fabric'}">
+                <span style="color:var(--muted);font-size:10px">m</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:4px;font-size:11px">
+                <span style="color:var(--muted)">Profit:</span>
+                <input type="number" class="form-control form-control-sm vt-profit-input"
+                  value="${defProfit}" step="5" min="0" max="500" placeholder="60">
+                <span style="color:var(--muted);font-size:10px">%</span>
+              </div>
+              <div class="vt-stock-chip vt-sc-na" data-su title="Units available for sale based on fabric stock ÷ qty per unit"></div>
+            </div>
+            <div class="vt-pricing"></div>`;
+
+          leaf.querySelectorAll('.vt-qty-input,.vt-profit-input').forEach(inp=>{
+            inp.addEventListener('input',function(){
+              if(!isPat&&inp.classList.contains('vt-qty-input')){
+                syncPlainFabricQty(sz.value,fn.value,cu.value,fab.value,this.value,container);
+              }
+              updateLeafPricing(leaf,extTotal,modelCode);
+            });
+          });
+          cBody.appendChild(leaf);
+          updateLeafPricing(leaf,extTotal,modelCode);
+        });
+
+        cushEl.appendChild(cHdr);cushEl.appendChild(cBody);
+        fBody.appendChild(cushEl);
+      });
+
+      finishEl.appendChild(fHdr);finishEl.appendChild(fBody);
+      sBody.appendChild(finishEl);
+    });
+
+    sizeEl.appendChild(sHdr);sizeEl.appendChild(sBody);
+    container.appendChild(sizeEl);
+  });
+}
+
+function buildLeafSKU(modelCode,size,finish,cushion,fabSupplier,fabCode,fabName,abbrMaps){
+  // Format: CP-{Model}-{Size(abb)}-{Finish(abb)}-{Cushion(abb)}-{FabMfr(abb)}-{FabCode(full)|FabName(abb)}
+  // abbrMaps = {sizes:{name:abbr,...}, fins:{...}, cus:{...}} — pre-computed unique abbreviations
+  const p=['CP'];
+  if(modelCode)p.push(modelCode.toUpperCase());
+  if(size)   p.push((abbrMaps?.sizes?.[size])  ?? abbrev10(size));
+  if(finish) p.push((abbrMaps?.fins?.[finish]) ?? abbrev10(finish));
+  if(cushion)p.push((abbrMaps?.cus?.[cushion]) ?? abbrev10(cushion));
+  if(fabSupplier)p.push(supplierCode(fabSupplier));
+  // Fabric code in full (strip only truly illegal chars, keep numbers & letters & dashes)
+  const codeClean=(fabCode||'').trim().replace(/[^a-zA-Z0-9\-]/g,'').toUpperCase();
+  if(codeClean)p.push(codeClean);
+  else if(fabName)p.push(abbrev10(fabName));
+  return p.join('-');
+}
+
+function updateLeafPricing(leaf,extTotal,modelCode){
+  const fckey=leaf.dataset.fckey;
+  const cdkey=leaf.dataset.cdkey;
+  const fabRate=parseFloat(leaf.dataset.fabRate)||0;
+  const carcass=parseFloat(_finishCostMap[fckey])||
+    parseFloat(leaf.closest('.vt-finish-hdr,.vt-finish')?.querySelector('.vt-carcass-input')?.value)||0;
+  const cd=_cushionDetailMap[cdkey]||{};
+  const labH=cd.labour_hours!=null?cd.labour_hours:
+    (parseFloat(leaf.closest('.vt-cushion')?.querySelector('.vt-lab-hrs')?.value)||0);
+  const labP=cd.labour_persons||
+    (parseInt(leaf.closest('.vt-cushion')?.querySelector('.vt-lab-pers')?.value)||1);
+  const foam=cd.foam_cost!=null?cd.foam_cost:
+    (parseFloat(leaf.closest('.vt-cushion')?.querySelector('.vt-foam')?.value)||0);
+  const fabQty =parseFloat(leaf.querySelector('.vt-qty-input')?.value)||0;
+  const profPct=parseFloat(leaf.querySelector('.vt-profit-input')?.value)||60;
+  const extProfPct= parseFloat(document.getElementById('p-ext-profit')?.value)||0;
+  const royPct    = parseFloat(document.getElementById('p-royalties')?.value)||7;
+  const labour  =labH*labP*20;
+  const fabCost =fabQty*fabRate;
+  const soc     =carcass+labour+foam+fabCost;
+  const prodSP  =soc*(1+profPct/100);       // product selling price
+  const extSP   =(extTotal||0)*(1+extProfPct/100); // ext costs selling price
+  const combined=prodSP+extSP;              // total before royalties
+  const nonVat  =combined*(1+royPct/100);   // after royalties = Non-VAT amount
+  const vatAmt  =nonVat*0.05;
+  const finalPr =nonVat+vatAmt;
+  const fmt=(x)=>x>0?`AED ${x.toFixed(0)}`:'—';
+
+  // ── Stock units chip ─────────────────────────────────────────────
+  const suEl=leaf.querySelector('[data-su]');
+  if(suEl){
+    const sm=parseFloat(leaf.dataset.stockMetres);
+    const ss=leaf.dataset.stockStatus||'';
+    if(!ss||ss==='unknown'){
+      suEl.className='vt-stock-chip vt-sc-na';suEl.textContent='⚪ No stock data';
+    }else if(ss==='no_stock'){
+      suEl.className='vt-stock-chip vt-sc-no';suEl.textContent='🔴 No Stock';
+    }else if(ss==='in_stock'){
+      if(fabQty>0&&!isNaN(sm)&&sm>0){
+        const units=Math.floor(sm/fabQty);
+        if(units>=10){suEl.className='vt-stock-chip vt-sc-in';suEl.textContent=`🟢 ${units} units avail.`;}
+        else if(units>0){suEl.className='vt-stock-chip vt-sc-low';suEl.textContent=`⚠ ${units} units (low)`;}
+        else{suEl.className='vt-stock-chip vt-sc-no';suEl.textContent='🔴 0 units (stock too low)';}
+      }else if(fabQty<=0){
+        suEl.className='vt-stock-chip vt-sc-low';suEl.textContent=`⚠ ${isNaN(sm)?'?':Math.round(sm)}m (set qty)`;
+      }else{
+        suEl.className='vt-stock-chip vt-sc-na';suEl.textContent='⚪ No stock data';
+      }
+    }
+  }
+
+  const pEl=leaf.querySelector('.vt-pricing');if(!pEl)return;
+  if(soc>0||carcass>0){
+    const fmtPct=p=>p>0?` (+${p}%)`:'';
+    pEl.innerHTML=`
+      <div class="vt-p-item"><div class="vt-p-label">Carcass</div><div class="vt-p-val">${fmt(carcass)}</div></div>
+      <div class="vt-arrow">+</div>
+      <div class="vt-p-item"><div class="vt-p-label">Labour</div><div class="vt-p-val">${fmt(labour)}</div></div>
+      <div class="vt-arrow">+</div>
+      <div class="vt-p-item"><div class="vt-p-label">Foam</div><div class="vt-p-val">${fmt(foam)}</div></div>
+      <div class="vt-arrow">+</div>
+      <div class="vt-p-item"><div class="vt-p-label">Fabric</div><div class="vt-p-val">${fmt(fabCost)}</div></div>
+      <div class="vt-arrow">= SOC <b>${fmt(soc)}</b></div>
+      <div class="vt-p-item"><div class="vt-p-label">× Profit ${profPct}%</div><div class="vt-p-val" style="color:var(--success)">= ${fmt(prodSP)}</div></div>
+      <div class="vt-arrow" style="margin:0 4px">+</div>
+      <div class="vt-p-item"><div class="vt-p-label">Ext${fmtPct(extProfPct)}</div><div class="vt-p-val" style="color:var(--success)">= ${fmt(extSP)}</div></div>
+      <div class="vt-arrow">→ Combined <b>${fmt(combined)}</b></div>
+      <div class="vt-p-item"><div class="vt-p-label">+Roy ${royPct}%</div><div class="vt-p-val">${fmt(nonVat-combined)}</div></div>
+      <div class="vt-arrow">→</div>
+      <div class="vt-p-item" style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:4px;padding:2px 6px"><div class="vt-p-label" style="color:#166534;font-weight:700">Non-VAT</div><div class="vt-p-val" style="color:#166534;font-weight:700">${fmt(nonVat)}</div></div>
+      <div class="vt-arrow">+VAT 5%</div>
+      <div class="vt-p-item"><div class="vt-p-label" style="font-size:10px">VAT</div><div class="vt-p-val">${fmt(vatAmt)}</div></div>
+      <div class="vt-arrow">→</div>
+      <div class="vt-p-item"><div class="vt-p-label" style="font-weight:700">Final SP</div><div class="vt-p-val final">${fmt(finalPr)}</div></div>`;
+  }else{
+    pEl.innerHTML='<span style="font-size:11px;color:var(--muted);font-style:italic">Enter carcass cost above to see pricing</span>';
+  }
+}
+
+function syncPlainFabricQty(sizeN,finishN,cushionN,fabricN,qty,container){
+  (container||document.getElementById('variation-tree'))
+    ?.querySelectorAll('.vt-leaf').forEach(leaf=>{
+      if(leaf.dataset.isPat==='1')return;
+      const parts=(leaf.dataset.leafKey||'').split('|||');
+      if(parts.length<4)return;
+      if(parts[0]===sizeN&&parts[1]!==finishN&&parts[2]===cushionN&&parts[3]===fabricN){
+        const qi=leaf.querySelector('.vt-qty-input');
+        if(qi)qi.value=qty;
+      }
+    });
+}
+
+// ─── Data collectors for save ───
+function getFinishCostData(){
+  const result=[];
+  document.querySelectorAll('.vt-carcass-input').forEach(inp=>{
+    const key=inp.dataset.fckey;const cost=parseFloat(inp.value);
+    if(key&&!isNaN(cost))result.push({value:key,cost});
+  });
+  return result;
+}
+function getCushionDetailData(){
+  const seen=new Set();const result=[];
+  document.querySelectorAll('.vt-lab-hrs').forEach(inp=>{
+    const key=inp.dataset.cdkey;if(!key||seen.has(key))return;seen.add(key);
+    const hdr=inp.closest('.vt-cushion-hdr');if(!hdr)return;
+    const labH=parseFloat(hdr.querySelector('.vt-lab-hrs')?.value);
+    const labP=parseInt(hdr.querySelector('.vt-lab-pers')?.value)||1;
+    const foam=parseFloat(hdr.querySelector('.vt-foam')?.value);
+    result.push({value:key,labour_hours:isNaN(labH)?null:labH,labour_persons:labP,foam_cost:isNaN(foam)?null:foam});
+  });
+  return result;
+}
+function getLeafData(){
+  const result=[];
+  document.querySelectorAll('.vt-leaf').forEach(leaf=>{
+    const key=leaf.dataset.leafKey;if(!key)return;
+    const fabQty=parseFloat(leaf.querySelector('.vt-qty-input')?.value);
+    const profPct=parseFloat(leaf.querySelector('.vt-profit-input')?.value);
+    result.push({
+      value:key,
+      fabric_qty:isNaN(fabQty)?null:fabQty,
+      meta:JSON.stringify({profit_pct:isNaN(profPct)?60:profPct}),
+    });
+  });
+  return result;
+}
+
+// (legacy stubs — kept so old save/load code won't crash if called)
+function renderWoodEntries(count,existing=[]){
+  const c=document.getElementById('p-wood-fields');if(!c)return;c.innerHTML='';
+}
+function getWoodEntryData(){ return []; }
+
+// ─── Legacy stubs ───
+function renderSizeBlocks(){ }
+function getSizeBlockData(){ return []; }
+function getSubvarData(){ return []; }
+function updateSvBadge(){ }
+function renderSubvars(){ }
+// removed body
+function _removedSizeBlocksBody(){
+  const c=null;
+  if(!c)return;
+  c.innerHTML='';
+  for(let i=0;i<count;i++){
+    const ex=existing[i]||{};
+    const defMat  =ex.cost          !==null&&ex.cost          !==undefined?ex.cost          :(parseFloat(v('p-default-mat'))||0);
+    const defFabQ =ex.fabric_qty    !==null&&ex.fabric_qty    !==undefined?ex.fabric_qty    :(parseFloat(v('p-default-fab-qty'))||0);
+    const defLab  =ex.labour_hours  !==null&&ex.labour_hours  !==undefined?ex.labour_hours  :(parseFloat(v('p-default-lab-hrs'))||0);
+    const defPers =ex.labour_persons!==null&&ex.labour_persons!==undefined?ex.labour_persons:(parseInt(v('p-default-lab-persons'))||1);
+    const defFoam =ex.foam_cost||0;
+
+    const block=document.createElement('div');
+    block.className='size-block';block.dataset.idx=i;
+    block.innerHTML=`
+      <div class="size-block-header">
+        <button class="size-toggle-btn" type="button">▶</button>
+        <span style="font-size:12px;font-weight:700;color:var(--accent);white-space:nowrap">📐 Size ${i+1}</span>
+        <input type="text" class="form-control form-control-sm" style="max-width:160px;font-weight:700"
+          placeholder="e.g. Small" value="${esc(ex.value||'')}" data-field="value" list="dl-size-names">
+        <input type="text" class="form-control form-control-sm" style="max-width:130px"
+          placeholder="40×40 cm" value="${esc(ex.dimensions||'')}" data-field="dimensions" list="dl-p-dims">
+        <span class="sv-count-badge" id="svbadge-${i}"></span>
+      </div>
+      <datalist id="dl-size-names"><option value="Small"><option value="Medium"><option value="Large"><option value="XS"><option value="XL"></datalist>
+      <div class="size-block-body" id="sbody-${i}" style="display:none">
+        <div class="size-base-costs">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:8px">Base costs for this size</div>
+          <div class="row g-2">
+            <div class="col-6 col-md-2">
+              <label class="form-label" style="font-size:11px">Wood/Material (AED)</label>
+              <input type="number" class="form-control form-control-sm p-pricing-input" data-field="cost" value="${defMat||''}" step="1" placeholder="600">
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label" style="font-size:11px">Fabric Qty (m)</label>
+              <input type="number" class="form-control form-control-sm p-pricing-input" data-field="fabric_qty" value="${defFabQ||''}" step="0.5" placeholder="1.5">
+            </div>
+            <div class="col-6 col-md-2">
+              <label class="form-label" style="font-size:11px">Labour (hrs)</label>
+              <input type="number" class="form-control form-control-sm p-pricing-input" data-field="labour_hours" value="${defLab||''}" step="0.5" placeholder="4">
+            </div>
+            <div class="col-4 col-md-1">
+              <label class="form-label" style="font-size:11px">Persons</label>
+              <input type="number" class="form-control form-control-sm p-pricing-input" data-field="labour_persons" value="${defPers||1}" min="1">
+            </div>
+            <div class="col-4 col-md-2">
+              <label class="form-label" style="font-size:11px">Foam/Cushion (AED)</label>
+              <input type="number" class="form-control form-control-sm p-pricing-input" data-field="foam_cost" value="${defFoam||''}" step="1" placeholder="30">
+            </div>
+            <div class="col-4 col-md-1">
+              <label class="form-label" style="font-size:11px">Weight (kg)</label>
+              <input type="number" class="form-control form-control-sm" data-field="weight_kg" value="${ex.weight_kg||''}" step="0.1">
+            </div>
+            <div class="col-4 col-md-2">
+              <label class="form-label" style="font-size:11px">Volume (m³)</label>
+              <input type="text" class="form-control form-control-sm" data-field="cubic_volume" value="${esc(ex.cubic_volume||'')}" placeholder="0.064">
+            </div>
+          </div>
+        </div>
+        <div class="size-subvars" id="svlist-${i}"></div>
+      </div>`;
+
+    // Toggle open/close
+    const togBtn=block.querySelector('.size-toggle-btn');
+    const body=block.querySelector('.size-block-body');
+    togBtn.addEventListener('click',function(e){
+      e.stopPropagation();
+      const open=body.style.display==='block';
+      body.style.display=open?'none':'block';
+      this.textContent=open?'▶':'▼';
+      this.classList.toggle('open',!open);
+      if(!open)renderSubvars(block,i,subvarData);
+    });
+
+    // Base-cost changes → re-render subvars (if open) + refresh pricing panel
+    block.querySelectorAll('.p-pricing-input').forEach(el=>el.addEventListener('input',()=>{
+      recalcProductPanel();
+      if(body.style.display!=='none')renderSubvars(block,i,subvarData);
+    }));
+
+    // Name change → refresh subvar SKUs
+    block.querySelector('[data-field="value"]').addEventListener('input',()=>{
+      if(body.style.display!=='none')renderSubvars(block,i,subvarData);
+    });
+
+    c.appendChild(block);
+    updateSvBadge(block,i,subvarData);
+  }
+}
+
+function getSizeBlockData(){
+  const c=document.getElementById('p-size-blocks');if(!c)return[];
+  return[...c.querySelectorAll('.size-block')].map(block=>({
+    value:         block.querySelector('[data-field="value"]')?.value.trim()||'',
+    cost:          parseFloat(block.querySelector('[data-field="cost"]')?.value)||null,
+    fabric_qty:    parseFloat(block.querySelector('[data-field="fabric_qty"]')?.value)||null,
+    labour_hours:  parseFloat(block.querySelector('[data-field="labour_hours"]')?.value)||null,
+    labour_persons:parseInt(block.querySelector('[data-field="labour_persons"]')?.value)||1,
+    foam_cost:     parseFloat(block.querySelector('[data-field="foam_cost"]')?.value)||null,
+    dimensions:    block.querySelector('[data-field="dimensions"]')?.value.trim()||'',
+    weight_kg:     parseFloat(block.querySelector('[data-field="weight_kg"]')?.value)||null,
+    cubic_volume:  block.querySelector('[data-field="cubic_volume"]')?.value.trim()||'',
+  }));
+}
+
+function getSubvarData(){
+  const out=[];
+  document.querySelectorAll('.size-block').forEach(block=>{
+    const svCont=block.querySelector('.size-subvars');
+    if(!svCont)return;
+    svCont.querySelectorAll('.subvar-block').forEach(sv=>{
+      const fabQtyEl=sv.querySelector('.sv-fab-qty-input');
+      const finalPEl=sv.querySelector('.sv-final-price');
+      const finalP=parseFloat(finalPEl?.value)||null;
+      const skuEl=sv.querySelector('.subvar-sku');
+      out.push({
+        value:    sv.dataset.key||'',
+        code:     (skuEl?.textContent||'').trim(),
+        cost:     parseFloat(sv.querySelector('.sv-mat')?.value)||null,
+        fabric_qty:     fabQtyEl?parseFloat(fabQtyEl.value)||null:null,
+        labour_hours:   parseFloat(sv.querySelector('.sv-lab-hrs')?.value)||null,
+        labour_persons: parseInt(sv.querySelector('.sv-lab-pers')?.value)||1,
+        foam_cost:      parseFloat(sv.querySelector('.sv-foam')?.value)||null,
+        meta: JSON.stringify({
+          final_price: finalP,
+          sku: (skuEl?.textContent||'').trim(),
+        }),
+      });
+    });
+  });
+  return out;
+}
+
+function updateSvBadge(block,i,subvarData){
+  const badge=document.getElementById(`svbadge-${i}`);
+  if(!badge)return;
+  const fabs=getFabricEntryData().filter(f=>f.value).length;
+  const wds=getWoodEntryData().filter(w=>w.value).length;
+  const n=(fabs||1)*(wds||1);
+  badge.textContent=n>0?`${n} sub-variation${n>1?'s':''}`:'' ;
+}
+
+function renderSubvars(block,sizeIdx,subvarData){
+  const cont=document.getElementById(`svlist-${sizeIdx}`);
+  if(!cont)return;
+  const fabrics=getFabricEntryData().filter(f=>f.value);
+  const woods=getWoodEntryData().filter(w=>w.value);
+  if(fabrics.length===0&&woods.length===0){
+    cont.innerHTML='<div style="font-size:11px;color:var(--muted);padding:6px 0;font-style:italic">Add fabric colours or wood options above to auto-generate sub-variations.</div>';
+    return;
+  }
+  const fabList=fabrics.length>0?fabrics:[{value:'',code:'',cost:0,is_patterned:0}];
+  const wdList=woods.length>0?woods:[{value:'',code:'',cost:0}];
+
+  const mat   =parseFloat(block.querySelector('[data-field="cost"]')?.value)||0;
+  const baseFabQ=parseFloat(block.querySelector('[data-field="fabric_qty"]')?.value)||0;
+  const labHrs=parseFloat(block.querySelector('[data-field="labour_hours"]')?.value)||0;
+  const labPers=parseInt(block.querySelector('[data-field="labour_persons"]')?.value)||1;
+  const foam  =parseFloat(block.querySelector('[data-field="foam_cost"]')?.value)||0;
+  const lab   =labHrs*labPers*20;
+  const profPct=parseFloat(v('p-default-profit-pct'))||60;
+  const extT=(parseFloat(v('p-ext-box'))||0)+(parseFloat(v('p-ext-bubble'))||0)+
+    (parseFloat(v('p-ext-stickers'))||0)+(parseFloat(v('p-ext-emboss'))||0)+
+    (parseFloat(v('p-ext-notecard'))||0)+(parseFloat(v('p-ext-patch'))||0)+
+    (parseFloat(v('p-ext-shipping'))||0);
+  const extSP=extT*(1+(parseFloat(v('p-ext-profit-pct'))||0)/100);
+  const roy=parseFloat(v('p-royalties-pct'))||0;
+  const vat=parseFloat(v('p-vat-pct'))||0;
+  const basesku=v('p-sku')||('CP-'+(v('p-model-abbr')||''));
+  const sizeName=(block.querySelector('[data-field="value"]')?.value||'').trim()||`S${sizeIdx+1}`;
+  const sizeAbbr=jsModelAbbr(sizeName)||String(sizeIdx+1);
+
+  const header=document.createElement('div');header.className='size-subvars-header';
+  header.textContent=`${fabList.length*wdList.length} Sub-Variation${fabList.length*wdList.length>1?'s':''} — SKU + Pricing`;
+  cont.innerHTML='';cont.appendChild(header);
+
+  let firstDefaults=null; // copy-from-first: set after rendering first sub-var
+
+  fabList.forEach(f=>{
+    wdList.forEach((w,wi)=>{
+      const key=`${sizeName}|||${f.value}|||${w.value}`;
+      const saved=subvarData.find(sv=>sv.value===key)||{};
+      let savedMeta={};try{savedMeta=JSON.parse(saved.meta||'{}');}catch(e){}
+      // Use saved → else first-entry defaults → else size block defaults
+      const fallback=firstDefaults||{mat,labHrs,labPers,foam};
+      const sMat  =saved.cost      !=null?saved.cost      :fallback.mat;
+      const sLabH =saved.labour_hours!=null?saved.labour_hours:fallback.labHrs;
+      const sLabP =saved.labour_persons||fallback.labPers;
+      const sFoam =saved.foam_cost !=null?saved.foam_cost :fallback.foam;
+      const fabRate=parseFloat(f.cost)||0;
+      const wdCost =parseFloat(w.cost)||0;
+      const patKey =(f.value||'').replace(/[^a-zA-Z0-9]/g,'_')||'fab';
+      const isPat  =f.is_patterned;
+      const sFabQ  =(isPat&&saved.fabric_qty!==undefined&&saved.fabric_qty!==null)?saved.fabric_qty:(saved.fabric_qty!==undefined&&saved.fabric_qty!==null?saved.fabric_qty:baseFabQ);
+      const sLab   =sLabH*sLabP*20;
+      const sFabC  =sFabQ*fabRate;
+      const soc    =sMat+sFabC+sLab+sFoam+wdCost;
+      const psp    =soc*(1+profPct/100);
+      const comb   =psp+extSP;
+      const aRoy   =comb*(1+roy/100);
+      const withVat=aRoy*(1+vat/100);
+      const savedFP=savedMeta.final_price;
+
+      const fabAbbr=f.value?jsColorAbbr(f.code||f.value):'';
+      const wdAbbr =w.value?jsModelAbbr(w.value):'';
+      const sku=[basesku,sizeAbbr,fabAbbr,wdAbbr].filter(Boolean).join('-').toUpperCase();
+      const label=[f.value,w.value].filter(Boolean).join(' × ')||'Base';
+
+      const optionId=saved.id||null; // stable DB id — null until first save
+
+      const sv=document.createElement('div');
+      sv.className='subvar-block';sv.dataset.key=key;
+      sv.dataset.fabRate=fabRate;sv.dataset.wdCost=wdCost;
+      if(optionId)sv.dataset.optionId=optionId;
+
+      // Colour swatch strip for fabric
+      const fabColor=f.code||f.value||'';
+      const swatchHtml=fabColor?`<span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:${CSS.supports('color',fabColor)?fabColor:'#ccc'};border:1px solid rgba(0,0,0,.15);flex-shrink:0"></span>`:'';
+
+      sv.innerHTML=`
+        <div class="subvar-row">
+          <div style="display:flex;flex-direction:column;gap:1px;min-width:0">
+            <span class="subvar-sku" style="font-size:10px">${esc(sku)}</span>
+            <span class="subvar-label" style="display:flex;align-items:center;gap:4px">${swatchHtml}${esc(label)}</span>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px">
+              <span style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">Cost</span>
+              <span class="subvar-soc" style="font-size:12px;font-weight:700;color:#374151">${soc>0?'AED '+soc.toFixed(0):'—'}</span>
+            </div>
+            <span style="color:var(--muted);font-size:14px">→</span>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:1px">
+              <span style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">Sugg SP</span>
+              <span class="subvar-sp" style="font-size:12px;font-weight:700;color:var(--accent)">${withVat>0?'AED '+withVat.toFixed(0):'—'}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:1px">
+              <span style="font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)">Final Price</span>
+              <div class="input-group input-group-sm" style="max-width:120px">
+                <span class="input-group-text" style="font-size:11px">AED</span>
+                <input type="number" class="form-control sv-final-price" step="0.01"
+                  placeholder="${withVat>0?withVat.toFixed(0):''}" value="${savedFP!=null?savedFP.toFixed(2):''}">
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;gap:4px;margin-left:auto">
+            <button class="subvar-files-btn" type="button" title="Files &amp; renders for this variation" style="background:#F0F9FF;border:1px solid #BAE6FD;color:#0369A1;border-radius:5px;font-size:11px;padding:3px 8px;cursor:pointer">📸 Files</button>
+            <button class="subvar-expand-btn" type="button" title="Edit costs" style="background:#F9FAFB;border:1px solid #E5E7EB;border-radius:5px;font-size:11px;padding:3px 8px;cursor:pointer">⚙ Costs</button>
+          </div>
+        </div>
+
+        <!-- Cost detail panel (hidden by default) -->
+        <div class="subvar-detail" style="display:none">
+          <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Cost Inputs — ${esc(label)}</div>
+          <div class="row g-2">
+            <div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Wood/Material (AED)</label>
+              <input type="number" class="form-control form-control-sm p-pricing-input sv-mat" step="1" value="${sMat||''}" placeholder="600"></div>
+            ${isPat
+              ?`<div class="col-6 col-md-2"><label class="form-label" style="font-size:11px;color:#D97706">⚠ ${esc(f.value)} Qty (m) <em style="font-style:normal;font-weight:400">(patterned)</em></label>
+                <input type="number" class="form-control form-control-sm p-pricing-input sv-fab-qty-input" step="0.25" value="${sFabQ||''}" placeholder="${baseFabQ||'?'}"></div>`
+              :`<div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Fabric Qty (m)</label>
+                <input type="number" class="form-control form-control-sm p-pricing-input sv-fab-qty-input" step="0.5" value="${sFabQ||''}" placeholder="1.5"></div>`}
+            <div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Labour (hrs)</label>
+              <input type="number" class="form-control form-control-sm p-pricing-input sv-lab-hrs" step="0.5" value="${sLabH||''}" placeholder="4"></div>
+            <div class="col-4 col-md-1"><label class="form-label" style="font-size:11px">Persons</label>
+              <input type="number" class="form-control form-control-sm p-pricing-input sv-lab-pers" min="1" value="${sLabP||1}"></div>
+            <div class="col-4 col-md-2"><label class="form-label" style="font-size:11px">Foam/Cushion (AED)</label>
+              <input type="number" class="form-control form-control-sm p-pricing-input sv-foam" step="1" value="${sFoam||''}" placeholder="30"></div>
+          </div>
+          <div class="size-cost-grid sv-summary-grid" style="margin-top:8px"></div>
+        </div>
+
+        <!-- Files panel (hidden by default) -->
+        <div class="subvar-files-panel" style="display:none;padding:10px 0 4px;border-top:1px solid #F3F4F6;margin-top:6px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)">Files for: ${esc(label)}</span>
+            <span style="font-size:10px;color:var(--muted)">(photos, renders, 3D renders)</span>
+          </div>
+          <div class="sv-file-grid" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:8px"></div>
+          ${optionId
+            ?`<label class="sv-upload-label" data-option-id="${optionId}" style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#0369A1;cursor:pointer;border:1px dashed #BAE6FD;border-radius:6px;padding:5px 12px;background:#F0F9FF">
+                <input type="file" class="sv-file-input" accept="image/*,.pdf" multiple style="display:none">
+                + Add Photos / Renders
+              </label>`
+            :`<div style="font-size:11px;color:var(--muted);font-style:italic">Save the product first to enable file uploads for sub-variations</div>`}
+        </div>`;
+
+      // Wire expand toggle (costs)
+      sv.querySelector('.subvar-expand-btn').addEventListener('click',function(){
+        const det=sv.querySelector('.subvar-detail');
+        const open=det.style.display==='block';
+        det.style.display=open?'none':'block';
+        this.textContent=open?'⚙ Costs':'✕ Close';
+        if(!open)updateSubvarSummary(sv);
+      });
+      // Wire files toggle
+      sv.querySelector('.subvar-files-btn').addEventListener('click',function(){
+        const panel=sv.querySelector('.subvar-files-panel');
+        const open=panel.style.display==='block';
+        panel.style.display=open?'none':'block';
+        this.textContent=open?'📸 Files':'✕ Files';
+        if(!open&&optionId)loadSubvarFiles(sv,optionId);
+      });
+      // Wire cost inputs → live recalc
+      sv.querySelectorAll('.p-pricing-input').forEach(el=>el.addEventListener('input',()=>updateSubvarSummary(sv)));
+      sv.querySelector('.sv-final-price').addEventListener('input',()=>updateSubvarSummary(sv));
+      // Wire file input
+      const fileInput=sv.querySelector('.sv-file-input');
+      if(fileInput&&optionId){
+        fileInput.addEventListener('change',async function(){
+          for(const file of this.files){
+            const fd=new FormData();
+            fd.append('file',file);
+            fd.append('entity_type','option');
+            fd.append('entity_id',optionId);
+            fd.append('file_category','image');
+            try{
+              const r=await fetch('/api/files/upload',{method:'POST',body:fd});
+              const d=await r.json();
+              if(d.url)addSubvarThumb(sv,d);
+              else toast(d.error||'Upload failed','error');
+            }catch(e){toast('Upload error','error');}
+          }
+          this.value='';
+        });
+      }
+
+      cont.appendChild(sv);
+      // Immediately show cost summary row
+      updateSubvarSummary(sv);
+      // Record first sub-var's resolved defaults for subsequent entries
+      if(firstDefaults===null)firstDefaults={mat:sMat,labHrs:sLabH,labPers:sLabP,foam:sFoam};
+    });
+  });
+}
+
+async function loadSubvarFiles(svEl,optionId){
+  const grid=svEl.querySelector('.sv-file-grid');
+  if(!grid)return;
+  grid.innerHTML='<span style="font-size:11px;color:var(--muted)">Loading…</span>';
+  const files=await api('GET',`/api/files/option/${optionId}`);
+  grid.innerHTML='';
+  (files||[]).forEach(f=>addSubvarThumb(svEl,f));
+}
+
+function addSubvarThumb(svEl,file){
+  const grid=svEl.querySelector('.sv-file-grid');if(!grid)return;
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:relative;width:72px;height:72px';
+  if(file.mime_type&&file.mime_type.startsWith('image/')){
+    wrap.innerHTML=`<img src="${file.url}" style="width:72px;height:72px;object-fit:cover;border-radius:6px;border:1px solid #E5E7EB" title="${esc(file.original_name||'')}">
+      <button onclick="deleteSubvarFile(this,${file.id})" style="position:absolute;top:-4px;right:-4px;background:#EF4444;color:#FFF;border:none;border-radius:50%;width:16px;height:16px;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>`;
+  }else{
+    wrap.innerHTML=`<div style="width:72px;height:72px;border-radius:6px;border:1px solid #E5E7EB;background:#F9FAFB;display:flex;align-items:center;justify-content:center;font-size:24px">📄</div>
+      <button onclick="deleteSubvarFile(this,${file.id})" style="position:absolute;top:-4px;right:-4px;background:#EF4444;color:#FFF;border:none;border-radius:50%;width:16px;height:16px;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center">✕</button>`;
+  }
+  grid.appendChild(wrap);
+}
+
+async function deleteSubvarFile(btn,fid){
+  if(!confirm('Remove this file?'))return;
+  await api('DELETE',`/api/files/${fid}`);
+  btn.closest('div[style]').remove();
+}
+
+function updateSubvarSummary(){ } // removed — pricing now in variation tree
+
+function _removedCushionBlocks(){
+  const mat  =parseFloat(null)||0;
+  const fabQ =parseFloat(sv.querySelector('.sv-fab-qty-input')?.value)||0;
+  const labH =parseFloat(sv.querySelector('.sv-lab-hrs')?.value)||0;
+  const labP =parseInt(sv.querySelector('.sv-lab-pers')?.value)||1;
+  const foam =parseFloat(sv.querySelector('.sv-foam')?.value)||0;
+  const fabR =parseFloat(sv.dataset.fabRate)||0;
+  const wdC  =parseFloat(sv.dataset.wdCost)||0;
+  const labCost=labH*labP*200; // AED 200/person/hr
+  const fabC =fabQ*fabR;
+  const soc  =mat+fabC+labCost+foam+wdC;
+  const profPct=parseFloat(v('p-default-profit-pct'))||60;
+  const extT=(parseFloat(v('p-ext-box'))||0)+(parseFloat(v('p-ext-bubble'))||0)+
+    (parseFloat(v('p-ext-stickers'))||0)+(parseFloat(v('p-ext-emboss'))||0)+
+    (parseFloat(v('p-ext-notecard'))||0)+(parseFloat(v('p-ext-patch'))||0)+
+    (parseFloat(v('p-ext-shipping'))||0);
+  const extSP=extT*(1+(parseFloat(v('p-ext-profit-pct'))||0)/100);
+  const royPct=parseFloat(v('p-royalties-pct'))||0;
+  const vatPct=parseFloat(v('p-vat-pct'))||0;
+  const psp  =soc*(1+profPct/100);
+  const listed=psp+extSP;
+  const withRoy=listed*(1+royPct/100);
+  const wv   =withRoy*(1+vatPct/100);
+  const finalSP=parseFloat(sv.querySelector('.sv-final-price')?.value)||wv;
+  const net  =finalSP-soc-extT;
+
+  // Update header row counters
+  const socEl=sv.querySelector('.subvar-soc');
+  const spEl=sv.querySelector('.subvar-sp');
+  if(socEl)socEl.textContent=soc>0?`AED ${soc.toFixed(0)}`:'—';
+  if(spEl)spEl.textContent=wv>0?`AED ${wv.toFixed(0)}`:'—';
+
+  // Update final price placeholder
+  const fpEl=sv.querySelector('.sv-final-price');
+  if(fpEl&&!fpEl.value)fpEl.placeholder=wv>0?wv.toFixed(0):'';
+
+  // Cost breakdown grid (always visible inside cost detail panel)
+  const grid=sv.querySelector('.sv-summary-grid');
+  if(!grid)return;
+  if(soc>0||wv>0){
+    grid.style.display='grid';
+    const fmtN=(n,dec=0)=>n>0?`AED ${n.toFixed(dec)}`:'—';
+    grid.innerHTML=`
+      <div class="size-cost-cell"><div class="label">Material</div><div class="val">${fmtN(mat)}</div></div>
+      <div class="size-cost-cell"><div class="label">Wood Cost</div><div class="val">${fmtN(wdC)}</div></div>
+      <div class="size-cost-cell"><div class="label">Fabric (${fabQ}m × ${fabR})</div><div class="val">${fmtN(fabC)}</div></div>
+      <div class="size-cost-cell"><div class="label">Labour (${labH}h × ${labP})</div><div class="val">${fmtN(labCost)}</div></div>
+      <div class="size-cost-cell"><div class="label">Foam/Cushion</div><div class="val">${fmtN(foam)}</div></div>
+      <div class="size-cost-cell" style="border-top:1px solid #E5E7EB"><div class="label" style="font-weight:700">SOC</div><div class="val" style="font-weight:700">${fmtN(soc)}</div></div>
+      <div class="size-cost-cell"><div class="label">+ Profit (${profPct}%)</div><div class="val">${fmtN(psp-soc)}</div></div>
+      <div class="size-cost-cell"><div class="label">Product SP</div><div class="val" style="color:var(--accent)">${fmtN(psp)}</div></div>
+      <div class="size-cost-cell"><div class="label">Ext. Costs</div><div class="val">${fmtN(extSP)}</div></div>
+      <div class="size-cost-cell"><div class="label">Royalties (${royPct}%)</div><div class="val">${fmtN(withRoy-listed)}</div></div>
+      <div class="size-cost-cell"><div class="label">VAT (${vatPct}%)</div><div class="val">${fmtN(wv-withRoy)}</div></div>
+      <div class="size-cost-cell" style="border-top:1px solid #E5E7EB"><div class="label" style="font-weight:700">Sugg SP</div><div class="val" style="font-weight:700;color:var(--accent)">${fmtN(wv)}</div></div>
+      <div class="size-cost-cell" style="grid-column:span 2"><div class="label">Net Profit (Final − SOC − Ext)</div><div class="val" style="font-size:13px;font-weight:700;color:${net>=0?'#166534':'#DC2626'}">${fmtN(net)}</div></div>`;
+  }else{
+    grid.style.display='none';
+  }
+}
+
+function renderCushionBlocks(){ }
+function getCushionBlockData(){ return []; }
+function _removedCushionBlocksBody(){
+  const c=document.getElementById('p-cushion-blocks');if(!c)return;c.innerHTML='';
+  buildDL('dl-cushion-value',['No Cushion','Single Cushion','Double Cushion','Triple Cushion']);
+  for(let i=0;i<count;i++){
+    const ex=existing[i]||{};
+    const fillOpts=FILLING_OPTS.map(f=>`<option value="${f}"${ex.filling_type===f?' selected':''}>${f}</option>`).join('');
+    const block=document.createElement('div');block.className='cushion-block';block.dataset.idx=i;
+    block.innerHTML=`
+      <div class="cushion-block-name">
+        <span style="color:var(--accent);font-size:13px">🪑 Config ${i+1}</span>
+        <input type="text" class="form-control form-control-sm" style="max-width:220px;font-weight:700"
+          placeholder="e.g. No Cushion / Single Cushion / Double" value="${esc(ex.value)}" data-field="value"
+          list="dl-cushion-value">
+      </div>
+      <div class="row g-2">
+        <div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Fabric Qty (m)</label>
+          <input type="number" class="form-control form-control-sm" data-field="fabric_qty"
+            value="${ex.fabric_qty||''}" step="0.5" placeholder="0.5"></div>
+        <div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Labour (hrs)</label>
+          <input type="number" class="form-control form-control-sm" data-field="labour_hours"
+            value="${ex.labour_hours||''}" step="0.5" placeholder="1"></div>
+        <div class="col-4 col-md-1"><label class="form-label" style="font-size:11px">Persons</label>
+          <input type="number" class="form-control form-control-sm" data-field="labour_persons"
+            value="${ex.labour_persons||1}" min="1"></div>
+        <div class="col-6 col-md-2"><label class="form-label" style="font-size:11px">Foam Cost (AED)</label>
+          <div class="input-group input-group-sm"><span class="input-group-text">AED</span>
+            <input type="number" class="form-control" data-field="foam_cost"
+              value="${ex.foam_cost||''}" step="1" placeholder="30">
+          </div></div>
+        <div class="col-6 col-md-3"><label class="form-label" style="font-size:11px">Filling Type</label>
+          <select class="form-select form-select-sm" data-field="filling_type">${fillOpts}</select></div>
+      </div>`;
+    c.appendChild(block);
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  File Tabs
+// ═══════════════════════════════════════════════════════════
+function switchFileTab(entity,cat,btn){
+  const prefix=entity==='product'?'p':'v';
+  document.querySelectorAll(`#${prefix}-filetab-photo,#${prefix}-filetab-drawing,#${prefix}-filetab-render`)
+    .forEach(el=>el.classList.remove('active'));
+  document.getElementById(`${prefix}-filetab-${cat}`).classList.add('active');
+  // Update tab buttons
+  const section=btn.closest('.form-section');
+  section.querySelectorAll('.file-tab-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Product CRUD
+// ═══════════════════════════════════════════════════════════
+async function newProduct(){
+  const data=await api('POST','/api/products',{name:'New Product'});
+  products.push({...data,variants:[]});
+  expanded.add(data.id);
+  renderTree();
+  selectProduct(data);
+  toast('New product created','success');
+}
+
+async function selectProduct(p){
+  current={type:'product',id:p.id,data:p};
+  showPanel('product');
+  renderTree();
+
+  document.getElementById('pf-num').textContent=`Product #${p.product_number}`;
+  document.getElementById('pf-name').textContent=p.name||'Untitled';
+
+  sv('p-name',p.name);
+  const autoAbbr=jsModelAbbr(p.name||'');
+  sv('p-model-abbr',p.model_abbr||autoAbbr);
+  // Restore lock state: if saved abbr differs from auto → treat as manually edited
+  const mAbbrEl=document.getElementById('p-model-abbr');
+  if(mAbbrEl){
+    const savedDiffers=p.model_abbr&&p.model_abbr!==autoAbbr;
+    mAbbrEl.dataset.manuallyEdited=savedDiffers?'1':'';
+    mAbbrEl._lastAuto=autoAbbr;
+  }
+  sv('p-sku',p.sku);
+  sv('p-status',p.status||'DRAFT');
+  sv('p-manufacturer',p.manufacturer);
+  sv('p-dims',p.dimensions);
+  sv('p-weight',p.weight_kg);
+  sv('p-cubic',p.cubic_volume);
+  sv('p-desc',p.description);
+
+  // External costs
+  sv('p-ext-box',      p.ext_cost_box      ?? 30);
+  sv('p-ext-bubble',   p.ext_cost_bubble   ?? 10);
+  sv('p-ext-stickers', p.ext_cost_stickers ?? 15);
+  sv('p-ext-emboss',   p.ext_cost_emboss   ?? 20);
+  sv('p-ext-notecard', p.ext_cost_notecard ?? 20);
+  sv('p-ext-patch',    p.ext_cost_patch    ?? 20);
+  sv('p-ext-shipping',  p.ext_cost_shipping  ?? 50);
+  sv('p-default-profit',p.default_profit_pct ?? 60);
+  sv('p-ext-profit',    p.ext_profit_pct     ?? 0);
+  sv('p-royalties',     p.royalties_pct      ?? 7);
+  updateExtCostsTotal();
+
+  // Load options
+  const opts=await api('GET',`/api/products/${p.id}/options`);
+
+  // Fabric Library
+  const fabItems=opts['fabric']||[];
+  const fabCount=document.getElementById('p-fabric-count');
+  const fabN=Math.max(1,fabItems.length);
+  if(fabCount){fabCount.value=fabN;renderFabricEntries(fabN,fabItems);}
+
+  // Size defs (min 1 on load)
+  const sizeData=opts['size']||[];
+  const sCount=document.getElementById('p-size-count');
+  const sN=Math.max(1,sizeData.length);
+  if(sCount){sCount.value=sN;renderSizeDefs(sN,sizeData);}
+
+  // Finish defs (min 1 on load)
+  const finishData=opts['finish']||[];
+  const fCount=document.getElementById('p-finish-count');
+  const fN=Math.max(1,finishData.length);
+  if(fCount){fCount.value=fN;renderFinishDefs(fN,finishData);}
+
+  // Cushion defs (min 1 on load)
+  const cushionData=opts['cushion']||[];
+  const cCount=document.getElementById('p-cushion-count');
+  const cN=Math.max(1,cushionData.length);
+  if(cCount){cCount.value=cN;renderCushionDefs(cN,cushionData);}
+
+  // Populate tree state maps from saved data
+  _finishCostMap={};
+  (opts['finish_cost']||[]).forEach(fc=>{
+    if(fc.value)_finishCostMap[fc.value]=fc.cost??0;
+  });
+  _cushionDetailMap={};
+  (opts['cushion_detail']||[]).forEach(cd=>{
+    if(cd.value)_cushionDetailMap[cd.value]={
+      labour_hours:cd.labour_hours,labour_persons:cd.labour_persons||1,foam_cost:cd.foam_cost};
+  });
+  _leafMap={};
+  (opts['subvar']||[]).forEach(sv_=>{
+    if(sv_.value){
+      let meta={};try{meta=JSON.parse(sv_.meta||'{}');}catch(e){}
+      _leafMap[sv_.value]={id:sv_.id,fabric_qty:sv_.fabric_qty,profit_pct:meta.profit_pct??60};
+    }
+  });
+
+  // Build the variation tree
+  refreshVariationTree();
+
+  // Load files per category
+  loadFilesTabbed('product',p.id,'p');
+
+  loadLinks('product',p.id,'p-links-list');
+  initAllDropZones('p',p.id,'product');
+
+  // Shopify readiness check
+  runProductShopifyValidation();
+}
+
+async function saveProduct(){
+  if(!current||current.type!=='product')return;
+  const body={
+    name:v('p-name'), model_abbr:v('p-model-abbr')||jsModelAbbr(v('p-name')),
+    sku:v('p-sku'), status:v('p-status'), manufacturer:v('p-manufacturer'),
+    dimensions:v('p-dims'),
+    weight_kg:nv('p-weight'), cubic_volume:v('p-cubic'), description:v('p-desc'),
+    ext_cost_box:      nv('p-ext-box')      ?? 30,
+    ext_cost_bubble:   nv('p-ext-bubble')   ?? 10,
+    ext_cost_stickers: nv('p-ext-stickers') ?? 15,
+    ext_cost_emboss:   nv('p-ext-emboss')   ?? 20,
+    ext_cost_notecard: nv('p-ext-notecard') ?? 20,
+    ext_cost_patch:    nv('p-ext-patch')    ?? 20,
+    ext_cost_shipping: nv('p-ext-shipping') ?? 50,
+    royalties_pct:      nv('p-royalties')       ?? 7,
+    vat_pct:            5,
+    default_profit_pct: nv('p-default-profit')  ?? 60,
+    ext_profit_pct:     nv('p-ext-profit')       ?? 0,
+  };
+  // Options
+  const opts={};
+  opts.fabric         = getFabricEntryData().filter(o=>o.value);
+  opts.size           = getSizeDefs().filter(o=>o.value);
+  opts.finish         = getFinishDefs().filter(o=>o.value);
+  opts.cushion        = getCushionDefs().filter(o=>o.value);
+  opts.finish_cost    = getFinishCostData();
+  opts.cushion_detail = getCushionDetailData();
+  opts.subvar         = getLeafData().filter(o=>o.value);
+
+  const updated=await api('PUT',`/api/products/${current.id}`,body);
+  await api('PUT',`/api/products/${current.id}/options`,opts);
+  current.data=updated;
+  const idx=products.findIndex(p=>p.id===current.id);
+  if(idx>=0)products[idx]={...products[idx],...updated};
+  document.getElementById('pf-name').textContent=updated.name||'Untitled';
+  renderTree();
+
+  // Save predictive history
+  saveHistFromForm('p-',['name','model-abbr','manufacturer','dims','cubic']);
+  getFabricEntryData().forEach(f=>{
+    if(f.value)addHist('fab-value',f.value);
+    if(f.supplier)addHist('fab-supplier',f.supplier);
+    if(f.code)addHist('fab-code',f.code);
+  });
+  getFinishDefs().forEach(f=>{if(f.value)addHist('finish-value',f.value);if(f.manufacturer)addHist('finish-mfr',f.manufacturer);});
+  getCushionDefs().forEach(c=>{if(c.value)addHist('cushion-value',c.value);});
+  getSizeDefs().forEach(s=>{if(s.value)addHist('size-value',s.value);if(s.dimensions)addHist('p-dims',s.dimensions);});
+
+  toast('Product saved','success');
+  // Refresh Shopify readiness after save
+  setTimeout(runProductShopifyValidation, 300);
+}
+
+async function deleteProduct(){
+  if(!current||current.type!=='product')return;
+  if(!confirm(`Permanently delete "${current.data.name}" and all its variants?`))return;
+  await api('DELETE',`/api/products/${current.id}`);
+  products=products.filter(p=>p.id!==current.id);
+  current=null;
+  renderTree();
+  showPanel('welcome');
+  toast('Product deleted','info');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Variant CRUD
+// ═══════════════════════════════════════════════════════════
+async function newVariant(p){
+  expanded.add(p.id);
+  const data=await api('POST','/api/variants',{base_product_id:p.id});
+  const prod=products.find(x=>x.id===p.id);
+  if(prod)prod.variants=[...(prod.variants||[]),{...data}];
+  renderTree();
+  selectVariant(data,p);
+  toast('New variant created','success');
+}
+
+function selectVariant(v,p){
+  current={type:'variant',id:v.id,data:v,parentData:p};
+  showPanel('variant');
+  renderTree();
+
+  document.getElementById('vf-num').textContent=`Variant ${v.variant_number}`;
+  document.getElementById('vf-name').textContent=v.fabric_color_name||'Untitled';
+  document.getElementById('vf-parent').textContent=`↳ ${p.name}`;
+
+  sv('v-colour-name',v.fabric_color_name);
+  sv('v-fabric-type',v.fabric_type||'PLN');
+  sv('v-fabric-code',v.fabric_code);
+  sv('v-supplier-abbr',v.supplier_abbr||'');
+  sv('v-finish-code',v.finish_code||'');
+  sv('v-sku',v.variant_sku);
+  sv('v-fabric-link',v.fabric_code_link);
+  sv('v-wood',v.wood_option);
+  sv('v-leg',v.leg_option);
+  sv('v-status',v.status||'DRAFT');
+  sv('v-notes',v.notes);
+  sv('v-material',v.material_cost);
+  sv('v-fabric-qty',v.fabric_qty);
+  sv('v-labour-hrs',v.labour_hours);
+  sv('v-labour-persons',v.labour_persons||1);
+  sv('v-final-price',v.final_price);
+
+  renderCostPanel(v);
+  loadFilesTabbed('variant',v.id,'v');
+  loadLinks('variant',v.id,'v-links-list');
+  initAllDropZones('v',v.id,'variant');
+
+  if(v.shopify_synced_at){
+    document.getElementById('shopify-synced').style.display='';
+    document.getElementById('shopify-sync-date').textContent=`Last synced: ${new Date(v.shopify_synced_at).toLocaleString()}`;
+  }else{
+    document.getElementById('shopify-synced').style.display='none';
+  }
+  runShopifyValidation(v.id);
+
+  // Update SKU preview
+  updateVariantSKUPreview();
+}
+
+async function saveVariant(){
+  if(!current||current.type!=='variant')return;
+  const body={
+    variant_sku:v('v-sku'),status:v('v-status'),
+    fabric_color_name:v('v-colour-name'),fabric_code:v('v-fabric-code'),
+    fabric_type:v('v-fabric-type'),supplier_abbr:v('v-supplier-abbr'),
+    finish_code:v('v-finish-code'),fabric_code_link:v('v-fabric-link'),
+    wood_option:v('v-wood'),leg_option:v('v-leg'),
+    material_cost:nv('v-material'),fabric_qty:nv('v-fabric-qty'),
+    fabric_rate:nv('v-fabric-rate')||50,
+    labour_hours:nv('v-labour-hrs'),labour_persons:nv('v-labour-persons')||1,
+    profit_pct:nv('v-profit-pct')||60,
+    final_price:nv('v-final-price'),notes:v('v-notes'),
+  };
+  const updated=await api('PUT',`/api/variants/${current.id}`,body);
+  current.data=updated;
+  const prod=products.find(p=>p.id===updated.base_product_id);
+  if(prod){const vi=prod.variants.findIndex(x=>x.id===current.id);if(vi>=0)prod.variants[vi]=updated;}
+  document.getElementById('vf-name').textContent=updated.fabric_color_name||'Untitled';
+  renderTree();
+  renderCostPanel(updated);
+  saveHistFromForm('v-',['colour-name','fabric-code','supplier-abbr','finish-code','wood','leg']);
+  ['v-colour-name','v-supplier-abbr','v-finish-code','v-wood','v-leg'].forEach(id=>addHist(id,v(id)));
+  toast('Variant saved','success');
+  runShopifyValidation(current.id);
+}
+
+async function deleteVariant(){
+  if(!current||current.type!=='variant')return;
+  if(!confirm('Delete this variant?'))return;
+  await api('DELETE',`/api/variants/${current.id}`);
+  const prod=products.find(p=>p.id===current.data.base_product_id);
+  if(prod)prod.variants=prod.variants.filter(x=>x.id!==current.id);
+  current=null;
+  renderTree();
+  showPanel('welcome');
+  toast('Variant deleted','info');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SKU Generate Buttons (on-demand only)
+// ═══════════════════════════════════════════════════════════
+function generateProductSKU(){
+  const m=v('p-model-abbr')||jsModelAbbr(v('p-name'));
+  document.getElementById('p-sku').value=m?`CP-${m.toUpperCase()}`:'';
+  document.getElementById('p-model-abbr').value=m;
+  toast('Product SKU generated','info');
+}
+
+function generateVariantSKU(){
+  const parentData=current?.parentData||current?.data;
+  const m=(parentData?.model_abbr)||jsModelAbbr(parentData?.name||'');
+  const gen=jsVariantSKU(m,v('v-supplier-abbr'),v('v-fabric-code'),v('v-finish-code'));
+  document.getElementById('v-sku').value=gen;
+  document.getElementById('v-sku-preview').textContent=gen?`→ ${gen}`:'';
+  toast('Variant SKU generated','info');
+}
+
+function updateVariantSKUPreview(){
+  const parentData=current?.parentData||current?.data;
+  const m=(parentData?.model_abbr)||jsModelAbbr(parentData?.name||'');
+  const gen=jsVariantSKU(m,v('v-supplier-abbr'),v('v-fabric-code'),v('v-finish-code'));
+  const el=document.getElementById('v-sku-preview');
+  if(el)el.textContent=gen?`Preview: ${gen}`:'';
+}
+
+['v-supplier-abbr','v-fabric-code','v-finish-code'].forEach(id=>{
+  document.getElementById(id)?.addEventListener('input',updateVariantSKUPreview);
+});
+
+// ═══════════════════════════════════════════════════════════
+//  Product Pricing Panel — removed (pricing now lives in the variation tree leaves)
+// ═══════════════════════════════════════════════════════════
+
+function recalcProductPanel(){ return; } // stub — pricing lives in tree leaves
+function updateSizeSummary(){ } // stub
+function _removedProductPanel(){ // ── Block 1: Product Costs ──
+  const mat     = parseFloat(v('p-default-mat'))          || 0;
+  const qty     = parseFloat(v('p-default-fab-qty'))      || 0;
+  const rate    = parseFloat(v('p-default-fab-rate'))     || 50;
+  const hrs     = parseFloat(v('p-default-lab-hrs'))      || 0;
+  const persons = parseInt(v('p-default-lab-persons'))    || 1;
+  const profPct = parseFloat(v('p-default-profit-pct'))   || 60;
+
+  const fab  = qty * rate;
+  const lab  = hrs * persons * 20;
+  const soc  = mat + fab + lab;
+  const prof = soc * (profPct / 100);
+  const psp  = soc + prof;
+
+  // ── Block 2: External Costs ──
+  const box      = parseFloat(v('p-ext-box'))      || 0;
+  const bubble   = parseFloat(v('p-ext-bubble'))   || 0;
+  const stickers = parseFloat(v('p-ext-stickers')) || 0;
+  const emboss   = parseFloat(v('p-ext-emboss'))   || 0;
+  const notecard = parseFloat(v('p-ext-notecard')) || 0;
+  const patch    = parseFloat(v('p-ext-patch'))    || 0;
+  const shipping = parseFloat(v('p-ext-shipping')) || 0;
+  const extProfPct = parseFloat(v('p-ext-profit-pct')) || 0;
+
+  const pkgTotal  = box + bubble + stickers + emboss + notecard + patch;
+  const extTotal  = pkgTotal + shipping;
+  const extProfit = extTotal * (extProfPct / 100);
+  const extSP     = extTotal + extProfit;
+
+  // ── Block 3: Combined + Fees ──
+  const royPct   = parseFloat(v('p-royalties-pct')) || 0;
+  const vatPct   = parseFloat(v('p-vat-pct'))       || 0;
+  const combined = psp + extSP;
+  const royalties = combined * (royPct / 100);
+  const afterRoy  = combined + royalties;
+  const vatAmt    = afterRoy * (vatPct / 100);
+  const sugg      = afterRoy + vatAmt;
+
+  // Final price — fill only when empty; user can override freely
+  const fpEl = document.getElementById('p-final-price');
+  if(fpEl && !fpEl.value && sugg > 0) fpEl.value = sugg.toFixed(2);
+  const finalSP = parseFloat(fpEl?.value) || sugg;
+
+  // Net profit
+  const trueCosts  = soc + extTotal;
+  const feesTotal  = royalties + vatAmt;
+  const totalOut   = trueCosts + feesTotal;
+  const netProfit  = finalSP - totalOut;
+  const netPct     = finalSP > 0 ? (netProfit / finalSP * 100) : 0;
+
+  const fmt = x => x > 0 ? `AED ${x.toFixed(2)}` : '—';
+  const fmtN = x => {
+    const s = `AED ${Math.abs(x).toFixed(2)}`;
+    return x < 0 ? `−${s}` : s;
+  };
+
+  // Block 1
+  st('pc-mat',       fmt(mat));
+  st('pc-fabric',    fmt(fab));
+  st('pc-labour',    fmt(lab));
+  st('pc-soc',       fmt(soc));
+  st('pc-pct-lbl',   profPct);
+  st('pc-profit',    fmt(prof));
+  st('pc-psp',       psp > 0 ? `AED ${psp.toFixed(2)}` : '—');
+
+  // Block 2
+  st('pc-pkg-total', fmt(pkgTotal));
+  st('pc-shipping',  fmt(shipping));
+  st('pc-ext-total', fmt(extTotal));
+  st('pc-ext-pct-lbl', extProfPct);
+  st('pc-ext-profit',fmt(extProfit));
+  st('pc-ext-sp',    extSP > 0 ? `AED ${extSP.toFixed(2)}` : '—');
+
+  // Block 3
+  st('pc-b3-psp',    fmt(psp));
+  st('pc-b3-esp',    fmt(extSP));
+  st('pc-combined',  fmt(combined));
+  st('pc-roy-pct-lbl', royPct);
+  st('pc-royalties', fmt(royalties));
+  st('pc-vat-pct-lbl', vatPct);
+  st('pc-vat',       fmt(vatAmt));
+  st('pc-sugg',      sugg > 0 ? `AED ${sugg.toFixed(2)}` : '—');
+
+  // Net profit
+  st('pc-true-costs', fmt(trueCosts));
+  st('pc-fees-total', fmt(feesTotal));
+  st('pc-total-out',  fmt(totalOut));
+  st('pc-net-profit', fmtN(netProfit));
+  const pctEl = document.getElementById('pc-net-pct');
+  if(pctEl) pctEl.textContent = finalSP > 0 ? `${netPct.toFixed(1)}% net margin` : '';
+  if(pctEl) pctEl.style.color = netProfit >= 0 ? '#166534' : '#991B1B';
+
+  // Also refresh size summaries
+  document.querySelectorAll('.size-block').forEach((b,i)=>updateSizeSummary(b,i));
+}
+
+// p-final-price no longer exists — removed
+
+// ═══════════════════════════════════════════════════════════
+//  Cost Panel (variant)
+// ═══════════════════════════════════════════════════════════
+document.querySelectorAll('.pricing-input').forEach(el=>el.addEventListener('input',recalcCostPanel));
+
+function recalcCostPanel(){
+  const mat     = parseFloat(v('v-material'))      || 0;
+  const qty     = parseFloat(v('v-fabric-qty'))    || 0;
+  const rate    = parseFloat(v('v-fabric-rate'))   || 50;
+  const hrs     = parseFloat(v('v-labour-hrs'))    || 0;
+  const persons = parseInt(v('v-labour-persons'))  || 1;
+  const profPct = parseFloat(v('v-profit-pct'))    || 60;
+
+  const fab     = qty * rate;
+  const lab     = hrs * persons * 20;
+  const soc     = mat + fab + lab;
+  const prof    = soc * (profPct / 100);
+  const psp     = soc + prof;
+  const ext     = 215; // 115 packaging + 100 shipping
+  const listed  = psp + ext;
+  const roy     = listed * 0.07;
+  const preVat  = listed + roy;
+  const vatAmt  = preVat * 0.05;
+  const sugg    = preVat + vatAmt;
+
+  const fmt  = x => x > 0 ? `AED ${x.toFixed(2)}` : '—';
+  const fmtS = x => x > 0 ? `(${x.toFixed(2)})` : '';
+
+  st('c-mat',     fmt(mat));
+  st('c-fabric',  fmt(fab));
+  st('c-labour',  fmt(lab));
+  st('c-soc',     fmt(soc));
+  st('c-profit',  fmt(prof));
+  st('c-profit-amt', fmt(prof));
+  st('c-pct-lbl', profPct);
+  st('c-psp',     fmt(psp));
+  st('c-listed',  fmt(listed));
+  st('c-royalties',  fmt(roy));
+  st('c-royalties-lbl', fmtS(roy));
+  st('c-vat',     fmt(vatAmt));
+  st('c-vat-lbl', fmtS(vatAmt));
+  st('c-withvat', fmt(sugg));
+
+  // Auto-suggest final price
+  const fpEl = document.getElementById('v-final-price');
+  if(fpEl && (!fpEl.value || fpEl.dataset.auto === 'true') && sugg > 0){
+    fpEl.value = sugg.toFixed(2);
+    fpEl.dataset.auto = 'true';
+  }
+  updateCustomerPrice();
+}
+
+document.getElementById('v-final-price')?.addEventListener('input',function(){
+  this.dataset.auto='false';
+  updateCustomerPrice();
+});
+
+function updateCustomerPrice(){
+  const fp=parseFloat(v('v-final-price'))||0;
+  const el=document.getElementById('c-customer');
+  if(el)el.innerHTML=fp>0?`<b>AED ${(fp+50).toFixed(2)}</b>`:'<b>AED —</b>';
+}
+
+function renderCostPanel(vdata){
+  sv('v-material',      vdata.material_cost);
+  sv('v-fabric-qty',    vdata.fabric_qty);
+  sv('v-fabric-rate',   vdata.fabric_rate || 50);
+  sv('v-labour-hrs',    vdata.labour_hours);
+  sv('v-labour-persons',vdata.labour_persons || 1);
+  sv('v-profit-pct',    vdata.profit_pct != null ? vdata.profit_pct : 60);
+  sv('v-final-price',   vdata.final_price);
+  document.getElementById('v-final-price').dataset.auto = 'false';
+  recalcCostPanel();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Files (tabbed, 3 categories per entity)
+// ═══════════════════════════════════════════════════════════
+const FILE_CATS={photo:'product_photo',drawing:'drawing',render:'render'};
+
+async function loadFilesTabbed(entityType,entityId,prefix){
+  const cats=['photo','drawing','render'];
+  for(const cat of cats){
+    const gridId=`${prefix}-grid-${cat}`;
+    const files=await api('GET',`/api/files/${entityType}/${entityId}`);
+    const catFiles=files.filter(f=>f.file_category===FILE_CATS[cat]);
+    renderFileGrid(catFiles,gridId);
+  }
+}
+
+function renderFileGrid(files,gridId){
+  const grid=document.getElementById(gridId);
+  if(!grid)return;
+  grid.innerHTML='';
+  files.forEach(f=>addFileThumb(f,gridId));
+}
+
+function addFileThumb(f,gridId){
+  const grid=document.getElementById(gridId);
+  if(!grid)return;
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;flex-direction:column;align-items:center';
+  const thumb=document.createElement('div');
+  thumb.className='file-thumb';
+  const isImg=f.mime_type&&f.mime_type.startsWith('image/');
+  thumb.innerHTML=isImg?`<img src="${f.url}" alt="${f.original_name}">`:'<span class="pdf-icon">📄</span>';
+  const del=document.createElement('button');
+  del.className='del-btn'; del.textContent='×';
+  del.onclick=async()=>{await api('DELETE',`/api/files/${f.id}`);wrap.remove();toast('File removed','info');};
+  thumb.appendChild(del);
+  const name=document.createElement('div');
+  name.className='file-name'; name.textContent=f.original_name;
+  wrap.appendChild(thumb); wrap.appendChild(name);
+  grid.appendChild(wrap);
+}
+
+function initAllDropZones(prefix,entityId,entityType){
+  ['photo','drawing','render'].forEach(cat=>{
+    const zoneId=`${prefix}-drop-${cat}`;
+    const inputId=`${prefix}-input-${cat}`;
+    const gridId=`${prefix}-grid-${cat}`;
+    const dbCat=FILE_CATS[cat];
+
+    const zone=document.getElementById(zoneId);
+    const input=document.getElementById(inputId);
+    if(!zone||!input)return;
+
+    // Clone to remove old listeners
+    const z2=zone.cloneNode(true); zone.parentNode.replaceChild(z2,zone);
+    const i2=input.cloneNode(true); input.parentNode.replaceChild(i2,input);
+
+    const nz=document.getElementById(zoneId);
+    const ni=document.getElementById(inputId);
+    nz.addEventListener('dragover',e=>{e.preventDefault();nz.classList.add('drag-over')});
+    nz.addEventListener('dragleave',()=>nz.classList.remove('drag-over'));
+    nz.addEventListener('drop',e=>{e.preventDefault();nz.classList.remove('drag-over');
+      uploadFiles(e.dataTransfer.files,entityType,entityId,gridId,dbCat);});
+    ni.addEventListener('change',()=>{
+      uploadFiles(ni.files,entityType,entityId,gridId,dbCat);ni.value='';});
+  });
+}
+
+async function uploadFiles(fileList,entityType,entityId,gridId,category){
+  for(const file of fileList){
+    const fd=new FormData();
+    fd.append('file',file);
+    fd.append('entity_type',entityType);
+    fd.append('entity_id',entityId);
+    fd.append('file_category',category);
+    const r=await fetch('/api/files/upload',{method:'POST',body:fd});
+    if(r.ok){
+      const data=await r.json();
+      addFileThumb(data,gridId);
+      toast(`${file.name} uploaded`,'success');
+      if(current?.type==='variant')runShopifyValidation(current.id);
+    }else{
+      const err=await r.json();
+      toast(err.error||'Upload failed','error');
+    }
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Links
+// ═══════════════════════════════════════════════════════════
+async function loadLinks(entityType,entityId,listId){
+  const links=await api('GET',`/api/links/${entityType}/${entityId}`);
+  const el=document.getElementById(listId);
+  el.innerHTML='';
+  if(!links.length){el.innerHTML='<div style="color:var(--muted);font-size:12px">No links yet</div>';return;}
+  links.forEach(l=>appendLinkRow(l,listId));
+}
+function appendLinkRow(l,listId){
+  const el=document.getElementById(listId);
+  const row=document.createElement('div');
+  row.className='link-row';
+  row.innerHTML=`<span class="link-label">${l.label||'Link'}</span>
+    <a href="${l.url}" target="_blank" class="link-url">${l.url}</a>
+    <button class="link-del" title="Remove">×</button>`;
+  row.querySelector('.link-del').addEventListener('click',async()=>{
+    await api('DELETE',`/api/links/${l.id}`);row.remove();});
+  el.appendChild(row);
+}
+async function addLink(entityType){
+  const pre=entityType==='product'?'p':'v';
+  const label=v(`${pre}-link-label`), url=v(`${pre}-link-url`);
+  if(!url){toast('Enter a URL','error');return;}
+  const data=await api('POST','/api/links',{entity_type:entityType,entity_id:current.id,label,url});
+  appendLinkRow(data,`${pre}-links-list`);
+  document.getElementById(`${pre}-link-label`).value='';
+  document.getElementById(`${pre}-link-url`).value='';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Shopify
+// ═══════════════════════════════════════════════════════════
+
+/* ── Product-level validation ──────────────────────────── */
+async function runProductShopifyValidation(){
+  if(!current||current.type!=='product')return;
+  const pid=current.id;
+  const checksEl=document.getElementById('p-shopify-checks');
+  const statusEl=document.getElementById('p-shopify-status');
+  const pushBtn=document.getElementById('p-btn-push');
+  if(!checksEl)return;
+  checksEl.innerHTML='<span style="font-size:12px;color:var(--muted)">Checking…</span>';
+
+  const data=await api('GET',`/api/shopify/validate-product/${pid}`);
+  checksEl.innerHTML='';
+
+  data.checks.forEach(c=>{
+    const row=document.createElement('div');
+    row.className='shopify-check';
+    row.innerHTML=`<span class="check-icon ${c.pass?'pass':'fail'}">${c.pass?'✓':'✗'}</span>
+      <span style="font-size:13px;color:${c.pass?'var(--text)':'var(--muted)'}">${c.label}</span>`;
+    checksEl.appendChild(row);
+  });
+
+  // Variant issues
+  if(data.variant_issues&&data.variant_issues.length){
+    const h=document.createElement('div');
+    h.style.cssText='margin-top:8px;font-size:11px;font-weight:700;color:var(--danger);text-transform:uppercase;letter-spacing:.05em';
+    h.textContent='Variant issues:';
+    checksEl.appendChild(h);
+    data.variant_issues.forEach(vi=>{
+      const d=document.createElement('div');
+      d.style.cssText='font-size:12px;color:var(--danger);margin-left:8px';
+      d.textContent=`#${vi.variant_number}: ${vi.issues.join(', ')}`;
+      checksEl.appendChild(d);
+    });
+  }
+
+  // Status badge
+  const syncInvBtn=document.getElementById('p-btn-sync-inv');
+  if(statusEl){
+    if(data.shopify_product_id){
+      statusEl.innerHTML=`<span class="synced-badge">✓ Linked to Shopify #${data.shopify_product_id}</span>`;
+      if(syncInvBtn)syncInvBtn.style.display='';  // show sync-inventory button
+    } else {
+      statusEl.innerHTML=`<span style="font-size:12px;color:var(--muted)">Not yet pushed to Shopify</span>`;
+      if(syncInvBtn)syncInvBtn.style.display='none';
+    }
+  }
+
+  if(pushBtn)pushBtn.disabled=!data.valid;
+}
+
+async function pushProductToShopify(){
+  if(!current||current.type!=='product')return;
+  const btn=document.getElementById('p-btn-push');
+  if(btn){btn.disabled=true;btn.textContent='Pushing…';}
+  const result=await api('POST',`/api/shopify/push/${current.id}/all`);
+  if(result.ok){
+    const n=result.variants_synced?result.variants_synced.length:0;
+    toast(`✓ Pushed to Shopify! ${n} variant${n===1?'':'s'} synced`,'success');
+    // Update local product data
+    const prod=products.find(x=>x.id===current.id);
+    if(prod)prod.shopify_product_id=result.shopify_product_id;
+    // Re-validate to refresh status badge
+    await runProductShopifyValidation();
+  }else{
+    toast(`Shopify error: ${result.error||'Unknown error'}`,'error');
+  }
+  if(btn){btn.disabled=false;btn.textContent='Push All Variants to Shopify';}
+}
+
+async function syncShopifyInventory(){
+  if(!current||current.type!=='product')return;
+  const btn=document.getElementById('p-btn-sync-inv');
+  if(btn){btn.disabled=true;btn.textContent='📦 Syncing…';}
+  const result=await api('POST',`/api/shopify/sync-inventory/${current.id}`);
+  if(result.ok){
+    const updated=result.updated||[];
+    const ok=updated.filter(u=>u.ok).length;
+    const fail=updated.filter(u=>!u.ok||u.error).length;
+    let msg=`📦 Inventory synced: ${ok} variant${ok===1?'':'s'} updated`;
+    if(fail>0)msg+=` (${fail} failed — check console)`;
+    toast(msg,'success');
+    // Log detail to console for debugging
+    console.log('[Shopify Inventory Sync]', result);
+  }else{
+    toast(`Inventory sync failed: ${result.error||'Unknown error'}`,'error');
+  }
+  if(btn){btn.disabled=false;btn.textContent='📦 Sync Inventory';}
+}
+
+/* ── Legacy single-variant validation (variant panel) ──── */
+async function runShopifyValidation(vid){
+  // Variant panel still exists — keep it live for backwards compat
+  const checksEl=document.getElementById('shopify-checks');
+  const pushBtn=document.getElementById('btn-push');
+  if(!checksEl)return;
+  const data=await api('GET',`/api/shopify/validate/${vid}`);
+  checksEl.innerHTML='';
+  data.checks.forEach(c=>{
+    const row=document.createElement('div');
+    row.className='shopify-check';
+    row.innerHTML=`<span class="check-icon ${c.pass?'pass':'fail'}">${c.pass?'✓':'✗'}</span>
+      <span style="font-size:13px;color:${c.pass?'var(--text)':'var(--muted)'}">${c.label}</span>`;
+    checksEl.appendChild(row);
+  });
+  if(pushBtn)pushBtn.disabled=!data.valid;
+}
+async function pushToShopify(){
+  if(!current||current.type!=='variant')return;
+  // Redirect to product-level push for consistency
+  const prod=products.find(p=>p.id===current.data.base_product_id);
+  if(prod){
+    current={type:'product',id:prod.id,data:prod};
+    showPanel('product');
+    selectProduct(prod);
+    toast('Switched to product view — use "Push All Variants to Shopify"','info');
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+//  All Products Summary Table + Collapsible Detail Rows
+// ═══════════════════════════════════════════════════════════
+const _detailCache={};
+
+async function loadSummary(){
+  const rows=await api('GET','/api/products/summary');
+  const tbody=document.getElementById('ap-tbody');
+  tbody.innerHTML='';
+  if(!rows.length){
+    tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted)">No products yet. Create one in the Products tab.</td></tr>';
+    return;
+  }
+  rows.forEach(p=>{
+    const priceRange=p.min_price!=null
+      ?`<span class="price-range">${p.min_price===p.max_price
+          ?`AED ${p.min_price.toFixed(0)}`
+          :`AED ${p.min_price.toFixed(0)}–${p.max_price.toFixed(0)}`}</span>`
+      :'<span style="color:var(--muted)">—</span>';
+
+    // ── Product row ──
+    const tr=document.createElement('tr');
+    tr.className='ap-product-row';tr.dataset.pid=p.id;
+    tr.innerHTML=`
+      <td style="width:36px;text-align:center">
+        <button class="ap-expand-btn" id="ap-exp-${p.id}" title="Show / hide detail">▶</button>
+      </td>
+      <td style="color:var(--muted);font-weight:700">${p.product_number}</td>
+      <td><b>${p.name||'Untitled'}</b></td>
+      <td><code style="font-size:11px">${p.model_abbr||'—'}</code></td>
+      <td><code style="font-size:11px">${p.sku||'—'}</code></td>
+      <td style="font-size:12px">${p.manufacturer||'—'}</td>
+      <td><span class="badge-status badge-${p.status||'DRAFT'}">${p.status||'DRAFT'}</span></td>
+      <td>
+        <div style="font-size:12px">
+          <b>${p.variant_count}</b> total
+          ${p.active_variants>0?`<span style="color:var(--success);margin-left:4px">· ${p.active_variants} active</span>`:''}
+        </div>
+      </td>
+      <td>${priceRange}</td>`;
+
+    // Expand chevron
+    tr.querySelector('.ap-expand-btn').addEventListener('click',e=>{
+      e.stopPropagation();
+      toggleDetail(p);
+    });
+    // Row click → go to product form
+    tr.addEventListener('click',()=>{
+      switchView('products');
+      const prod=products.find(x=>x.id===p.id);
+      if(prod)selectProduct(prod);
+      else{loadProducts().then(()=>{const pp=products.find(x=>x.id===p.id);if(pp)selectProduct(pp);});}
+    });
+
+    // ── Detail row (hidden until expanded) ──
+    const dtr=document.createElement('tr');
+    dtr.className='ap-detail-row';dtr.id=`ap-detail-${p.id}`;dtr.style.display='none';
+    dtr.innerHTML=`<td colspan="9"><div class="ap-detail-wrap" id="ap-dc-${p.id}"><div style="color:var(--muted);font-size:12px;padding:8px 0">⏳ Loading…</div></div></td>`;
+
+    tbody.appendChild(tr);
+    tbody.appendChild(dtr);
+  });
+}
+
+async function toggleDetail(p){
+  const dtr=document.getElementById(`ap-detail-${p.id}`);
+  const btn=document.getElementById(`ap-exp-${p.id}`);
+  if(!dtr||!btn)return;
+  const open=dtr.style.display!=='none';
+  if(open){
+    dtr.style.display='none';btn.textContent='▶';btn.classList.remove('open');
+  }else{
+    dtr.style.display='';btn.textContent='▼';btn.classList.add('open');
+    if(!_detailCache[p.id]){
+      const opts=await api('GET',`/api/products/${p.id}/options`);
+      _detailCache[p.id]=opts;
+    }
+    renderDetail(p,_detailCache[p.id]);
+  }
+}
+
+// Column visibility state per-product — keys: details, costs, pricing
+const _colVis={};
+function getColVis(pid){
+  if(!_colVis[pid])_colVis[pid]={details:false,costs:true,pricing:true};
+  return _colVis[pid];
+}
+
+function renderDetail(p,opts){
+  const el=document.getElementById(`ap-dc-${p.id}`);
+  if(!el)return;
+  const sizes   =(opts['size']   ||[]).filter(s=>s.value);
+  const fabrics =(opts['fabric'] ||[]).filter(f=>f.value);
+  const finishes=(opts['finish'] ||[]).filter(f=>f.value);
+  const cushions=(opts['cushion']||[]).filter(c=>c.value);
+
+  // Pricing params from saved product
+  const royPct  = p.royalties_pct??7;
+  const vatPct  = p.vat_pct??5;
+  const extTotal= (p.ext_cost_box??30)+(p.ext_cost_bubble??10)+(p.ext_cost_stickers??15)+
+                  (p.ext_cost_emboss??20)+(p.ext_cost_notecard??20)+(p.ext_cost_patch??20)+
+                  (p.ext_cost_shipping??50);
+
+  // Build maps from saved option data
+  const finCostMap={};
+  (opts['finish_cost']||[]).forEach(fc=>{if(fc.value)finCostMap[fc.value]=fc.cost??0;});
+  const cushDetailMap={};
+  (opts['cushion_detail']||[]).forEach(cd=>{if(cd.value)cushDetailMap[cd.value]={labour_hours:cd.labour_hours,labour_persons:cd.labour_persons||1,foam_cost:cd.foam_cost};});
+  const leafMap={};
+  (opts['subvar']||[]).forEach(sv=>{
+    if(sv.value){let m={};try{m=JSON.parse(sv.meta||'{}');}catch(e){}
+    leafMap[sv.value]={fabric_qty:sv.fabric_qty,profit_pct:m.profit_pct??60};}
+  });
+
+  const mAbbr = p.model_abbr||jsModelAbbr(p.name||'');
+  const cv = getColVis(p.id);
+  const fmt = x=>x>0?`AED ${x.toFixed(0)}`:'—';
+
+  // Build all 4-level combinations
+  const effSizes    = sizes.length   ? sizes    : [{value:'—',dimensions:'',weight_kg:null}];
+  const effFinishes = finishes.length? finishes  : [{value:'—',manufacturer:''}];
+  const effCushions = cushions.length? cushions  : [{value:'—'}];
+  const effFabrics  = fabrics.length ? fabrics   : [{value:'—',supplier:'',code:'',cost:0,is_patterned:0}];
+
+  // Pre-compute unique abbreviations to avoid SKU collisions in the table
+  const detAbbrMaps={
+    sizes: getUniqueAbbrevs(effSizes.map(s=>s.value)),
+    fins:  getUniqueAbbrevs(effFinishes.map(f=>f.value)),
+    cus:   getUniqueAbbrevs(effCushions.map(c=>c.value)),
+  };
+
+  let rowHtml='';
+  effSizes.forEach(sz=>{
+    effFinishes.forEach((fn,fni)=>{
+      const fcKey=`${sz.value}|||${fn.value}`;
+      const carcass=parseFloat(finCostMap[fcKey])||0;
+      effCushions.forEach((cu,cui)=>{
+        const cdKey=`${sz.value}|||${fn.value}|||${cu.value}`;
+        const cd=cushDetailMap[cdKey]||{};
+        const labH=cd.labour_hours??0;
+        const labP=cd.labour_persons??1;
+        const foam=cd.foam_cost??0;
+        const labour=labH*labP*20;
+        effFabrics.forEach((fab,fabi)=>{
+          const leafKey=`${sz.value}|||${fn.value}|||${cu.value}|||${fab.value}`;
+          const lf=leafMap[leafKey]||{};
+          const fabQty=lf.fabric_qty??0;
+          const profPct=lf.profit_pct??60;
+          const fabRate=parseFloat(fab.cost)||0;
+          const fabCost=fabQty*fabRate;
+          const soc=carcass+labour+foam+fabCost;
+          const afterPro=soc+(soc*(profPct/100));
+          const afterExt=afterPro+extTotal;
+          const withRoy=afterExt*(1+royPct/100);
+          const finalSP=withRoy*(1+vatPct/100);
+          const sku=buildLeafSKU(mAbbr,sz.value,fn.value,cu.value,fab.supplier,fab.code,fab.value,detAbbrMaps);
+          const isFirst=fni===0&&cui===0&&fabi===0;
+          const showSzRow=fni===0&&cui===0&&fabi===0;
+          rowHtml+=`<tr${showSzRow?' style="border-top:2px solid var(--accent-light)"':''}>
+            <td><code style="font-size:10px;background:#F3F4F6;padding:2px 5px;border-radius:3px;white-space:nowrap">${esc(sku)}</code></td>
+            <td style="font-weight:600;white-space:nowrap;font-size:12px">${fni===0&&cui===0&&fabi===0?esc(sz.value):'↳'}</td>
+            ${cv.details?`<td style="font-size:11px;color:var(--muted)">${esc(sz.dimensions||'')}</td>
+            <td style="font-size:11px;color:var(--muted)">${sz.weight_kg??''?sz.weight_kg+'kg':''}</td>`:''}
+            <td style="font-size:12px">${fabi===0?esc(fn.value):'↳'}</td>
+            ${cv.details?`<td style="font-size:11px;color:var(--muted)">${esc(fn.manufacturer||'')}</td>`:''}
+            <td style="font-size:12px">${fabi===0&&fni===0?esc(cu.value):'↳'}</td>
+            <td style="font-size:12px">${esc(fab.value)}${fab.is_patterned?'<span class="patterned-badge" style="font-size:9px;margin-left:4px">PAT</span>':''}</td>
+            ${cv.details?`<td style="font-size:11px;color:var(--muted)">${esc(fab.supplier||'')}</td>
+            <td style="font-size:11px">${fab.code?`<code>${esc(fab.code)}</code>`:'—'}</td>
+            <td style="font-size:11px;color:var(--muted)">${fabRate?fabRate+'/m':'—'}</td>`:''}
+            ${cv.costs?`<td class="cost-col">${fabQty||'—'}</td>
+            <td class="cost-col">${carcass?fmt(carcass):'—'}</td>
+            <td class="cost-col">${labour?fmt(labour):'—'}</td>
+            <td class="cost-col">${foam?fmt(foam):'—'}</td>
+            <td class="cost-col">${fabCost?fmt(fabCost):'—'}</td>
+            <td class="cost-col soc-col">${soc?fmt(soc):'—'}</td>`:''}
+            ${cv.pricing?`<td class="cost-col">${profPct}%</td>
+            <td class="cost-col">${afterPro?fmt(afterPro):'—'}</td>
+            <td class="cost-col">${fmt(extTotal)}</td>
+            <td class="cost-col">${afterExt?fmt(afterExt):'—'}</td>
+            <td class="cost-col">${withRoy?fmt(withRoy*(royPct/100/(1+royPct/100))):'—'}</td>
+            <td class="cost-col">${withRoy?fmt(withRoy):'—'}</td>
+            <td class="cost-col">${finalSP?fmt(finalSP*(vatPct/100/(1+vatPct/100))):'—'}</td>`:''}
+            <td class="cost-col sp-col" style="font-weight:700;color:var(--accent)">${finalSP?fmt(finalSP):'—'}</td>
+          </tr>`;
+        });
+      });
+    });
+  });
+
+  // Build header based on column visibility
+  const colTogId=`col-tog-${p.id}`;
+  const hdrDet=cv.details?`<th>Dims</th><th>Wt</th><th>Mfr</th><th>Sup</th><th>Code</th><th>Rate</th>`:'';
+  const hdrCosts=cv.costs?`<th class="cost-col">Qty(m)</th><th class="cost-col">Carcass</th><th class="cost-col">Labour</th><th class="cost-col">Foam</th><th class="cost-col">Fabric</th><th class="cost-col soc-col">SOC</th>`:'';
+  const hdrPricing=cv.pricing?`<th class="cost-col">Profit%</th><th class="cost-col">+Profit</th><th class="cost-col">Ext</th><th class="cost-col">+Ext</th><th class="cost-col">Roy</th><th class="cost-col">Non-VAT</th><th class="cost-col">VAT</th>`:'';
+
+  el.innerHTML=`
+    <div class="col-toggle-bar" id="${colTogId}">
+      <span style="font-size:11px;color:var(--muted);font-weight:600">Show columns:</span>
+      <button class="col-tog-btn${cv.details?' active':''}" data-col="details">Details (dims, mfr, code)</button>
+      <button class="col-tog-btn${cv.costs?' active':''}" data-col="costs">Cost Breakdown</button>
+      <button class="col-tog-btn${cv.pricing?' active':''}" data-col="pricing">Pricing Steps</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="ap-sub-table">
+        <thead><tr>
+          <th>Full SKU</th><th>Size</th>
+          ${hdrDet}
+          <th>Finish</th>
+          ${cv.details?'<th>Mfr</th>':''}
+          <th>Cushion</th><th>Fabric</th>
+          ${hdrCosts}${hdrPricing}
+          <th class="cost-col sp-col">Final SP</th>
+        </tr></thead>
+        <tbody>${rowHtml}</tbody>
+      </table>
+    </div>`;
+
+  // Wire column toggle buttons
+  el.querySelectorAll('.col-tog-btn').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const col=btn.dataset.col;
+      cv[col]=!cv[col];
+      renderDetail(p,opts); // re-render with new visibility
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Warwick Login Test
+// ═══════════════════════════════════════════════════════════
+async function testWarwickLogin(){
+  const statusEl=document.getElementById('warwick-status-text');
+  if(statusEl)statusEl.textContent='Warwick: testing…';
+  const res=await api('POST','/api/warwick/test-login');
+  if(statusEl){
+    if(res.ok){
+      statusEl.textContent=`Warwick: ✓ ${res.message}`;
+      statusEl.style.color='var(--success)';
+    }else{
+      statusEl.textContent=`Warwick: ✗ ${res.message}`;
+      statusEl.style.color='var(--danger)';
+    }
+  }
+  toast(res.message, res.ok?'success':'error');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  Helpers
+// ═══════════════════════════════════════════════════════════
+function v(id){const el=document.getElementById(id);return el?el.value.trim():'';}
+function nv(id){const x=parseFloat(v(id));return isNaN(x)?null:x;}
+function sv(id,val){const el=document.getElementById(id);if(el)el.value=val??'';}
+function st(id,val){const el=document.getElementById(id);if(el)el.textContent=val;}
+
+// ═══════════════════════════════════════════════════════════
+//  Init
+// ═══════════════════════════════════════════════════════════
+loadProducts();
+</script>
+</body>
+</html>
