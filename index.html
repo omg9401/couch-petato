@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Couch Petato — Discover Petatopia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,300;0,400;0,600;0,700;0,800;0,900;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --space:   #0D0926;
+      --deep:    #130B38;
+      --purple:  #2D1869;
+      --violet:  #7C3AED;
+      --lilac:   #C4B5FD;
+      --lavender:#EDE9FE;
+      --cream:   #FEFCE8;
+      --peach:   #FFF7ED;
+      --gold:    #F59E0B;
+      --font-story: 'Nunito', sans-serif;
+      --font-body:  'Inter', sans-serif;
+    }
+
+    html { scroll-behavior: auto; }
+    body {
+      background: var(--space);
+      color: #fff;
+      font-family: var(--font-body);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ─── STAR CANVAS ─────────────────────────────────────── */
+    #star-canvas {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    }
+
+    /* ─── SHARED ──────────────────────────────────────────── */
+    .section { position: relative; z-index: 1; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(124,58,237,0.18);
+      border: 1px solid rgba(196,181,253,0.35);
+      color: var(--lilac);
+      font-family: var(--font-story); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 5px 14px; border-radius: 100px; backdrop-filter: blur(8px);
+    }
+
+    /* ─── NAV ─────────────────────────────────────────────── */
+    #nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 20px 5vw; display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: var(--font-story); font-size: 18px; font-weight: 900;
+      color: #fff; text-decoration: none; letter-spacing: -0.02em;
+    }
+    .nav-logo span { color: var(--lilac); }
+    .nav-cta {
+      background: rgba(124,58,237,0.2); border: 1px solid rgba(196,181,253,0.25);
+      color: var(--lilac); font-family: var(--font-story); font-size: 13px; font-weight: 700;
+      padding: 8px 20px; border-radius: 100px; text-decoration: none;
+      backdrop-filter: blur(12px); transition: all 0.2s;
+    }
+    .nav-cta:hover { background: rgba(124,58,237,0.4); color: #fff; }
+    #nav { animation: fadeIn 1s ease-out 1.1s both; }
+
+    /* ─── SECTION 1: HERO ─────────────────────────────────── */
+    #hero {
+      height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center; overflow: hidden;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(22px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    #hero-badge {
+      margin-bottom: 24px;
+      animation: fadeUp 0.8s ease-out 0.35s both;
+    }
+    #hero-headline {
+      font-family: var(--font-story); font-size: clamp(42px, 7vw, 96px);
+      font-weight: 900; line-height: 1.05; letter-spacing: -0.02em;
+      color: #fff; max-width: 800px;
+      animation: fadeUp 0.9s ease-out 0.6s both;
+    }
+    #hero-headline span { color: var(--lilac); }
+    #hero-sub {
+      margin-top: 20px; font-size: clamp(15px, 2vw, 20px); font-weight: 400;
+      color: rgba(196,181,253,0.75); max-width: 480px; line-height: 1.65;
+      animation: fadeUp 0.8s ease-out 0.85s both;
+    }
+    #rocket-wrap {
+      position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: clamp(160px, 22vw, 280px);
+      animation: fadeIn 1.1s ease-out 0.95s both;
+    }
+    #scroll-hint {
+      position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      font-family: var(--font-story); font-size: 12px; font-weight: 600;
+      color: rgba(196,181,253,0.6); letter-spacing: 0.1em; text-transform: uppercase;
+      animation: fadeIn 0.8s ease-out 1.5s both;
+    }
+    .scroll-arrow {
+      width: 18px; height: 18px;
+      border-right: 2px solid rgba(196,181,253,0.5);
+      border-bottom: 2px solid rgba(196,181,253,0.5);
+      transform: rotate(45deg);
+      animation: bounce 1.8s ease-in-out infinite;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: rotate(45deg) translateY(0); }
+      50%       { transform: rotate(45deg) translateY(5px); }
+    }
+
+    /* ─── SECTION 2: JOURNEY ──────────────────────────────── */
+    #journey { height: 550vh; }
+    #journey-inner {
+      position: sticky; top: 0; height: 100vh;
+      overflow: hidden; display: flex; align-items: center; justify-content: center;
+    }
+    #journey-rocket {
+      position: absolute; width: clamp(110px, 15vw, 210px);
+      left: 50%; top: 50%; transform: translate(-50%, -50%);
+      z-index: 10; filter: drop-shadow(0 0 28px rgba(124,58,237,0.5));
+    }
+    .planet { position: absolute; top: 50%; transform: translateY(-50%); z-index: 5; }
+    #planet-fetch   { right: -50vw; width: clamp(180px, 28vw, 380px); }
+    #planet-treatos { right: -60vw; width: clamp(160px, 24vw, 340px); top: 30%; }
+    #planet-zoomies { right: -55vw; width: clamp(140px, 20vw, 300px); top: 65%; }
+    #planet-petato  { right: -80vw; width: clamp(300px, 55vw, 700px); top: 50%; transform: translateY(-50%) scale(0.3); opacity:0; }
+
+    #journey-text {
+      position: absolute; left: 8vw; top: 50%; transform: translateY(-50%);
+      z-index: 20; max-width: 340px; pointer-events: none;
+    }
+    .journey-caption {
+      font-family: var(--font-story); font-size: clamp(18px, 2.5vw, 28px);
+      font-weight: 800; line-height: 1.3; color: #fff;
+      opacity: 0; position: absolute; top: 0; left: 0;
+    }
+    .journey-sub { font-size: 14px; color: rgba(196,181,253,0.7); margin-top: 10px; font-weight: 400; line-height: 1.6; }
+
+    /* ─── SECTION 3: APPROACH ─────────────────────────────── */
+    #approach { height: 200vh; overflow: hidden; }
+    #approach-inner {
+      position: sticky; top: 0; height: 100vh;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    #approach-planet { width: 60vmin; opacity: 0; transform: scale(0.15); }
+    #approach-glow {
+      position: absolute; inset: 0;
+      background: radial-gradient(ellipse at center, rgba(245,158,11,0.0) 0%, transparent 70%);
+      pointer-events: none; z-index: 2;
+    }
+    #approach-text {
+      position: absolute; top: 12vh; left: 50%; transform: translateX(-50%);
+      text-align: center; opacity: 0; z-index: 10;
+    }
+    #approach-text h2 {
+      font-family: var(--font-story); font-size: clamp(14px,2vw,18px);
+      font-weight: 700; color: var(--gold); letter-spacing: 0.15em; text-transform: uppercase;
+    }
+
+    /* ─── SECTION 4: WELCOME ──────────────────────────────── */
+    #welcome {
+      height: 100vh; display: flex; align-items: center; justify-content: center;
+      text-align: center; position: relative; overflow: hidden;
+      background: linear-gradient(to bottom, var(--space) 0%, #1A0A52 40%, #2D1869 100%);
+    }
+    #welcome-clouds-left, #welcome-clouds-right {
+      position: absolute; top: 0; bottom: 0; width: 52%; z-index: 5; pointer-events: none;
+    }
+    #welcome-clouds-left  { left: 0; }
+    #welcome-clouds-right { right: 0; transform: scaleX(-1); }
+    #welcome-content { position: relative; z-index: 10; opacity: 0; transform: scale(0.92); }
+    #welcome-content .eyebrow {
+      font-family: var(--font-story); font-size: 12px; font-weight: 700;
+      letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px;
+    }
+    #welcome-content h1 {
+      font-family: var(--font-story); font-size: clamp(50px, 9vw, 120px);
+      font-weight: 900; line-height: 1; letter-spacing: -0.025em;
+      background: linear-gradient(135deg, #fff 30%, var(--lilac) 70%, var(--gold) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    #welcome-content p {
+      margin-top: 20px; font-size: clamp(16px,2vw,22px);
+      color: rgba(237,233,254,0.75); font-family: var(--font-story); font-weight: 400;
+    }
+
+    /* ─── DISCOVERY ───────────────────────────────────────── */
+    .discovery-section {
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+      position: relative; overflow: hidden; padding: 80px 5vw;
+    }
+    #discovery-001 { background: linear-gradient(160deg, #1E0D5C 0%, #2D1869 50%, #1E3A5F 100%); }
+    #discovery-002 { background: linear-gradient(160deg, #1A0A2E 0%, #2C1A0E 50%, #3D2409 100%); }
+
+    .discovery-inner {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
+      align-items: center; max-width: 1200px; width: 100%;
+    }
+    @media (max-width: 768px) { .discovery-inner { grid-template-columns: 1fr; text-align: center; } }
+
+    .discovery-label {
+      font-family: var(--font-story); font-size: 11px; font-weight: 700;
+      letter-spacing: 0.2em; text-transform: uppercase; color: var(--gold); margin-bottom: 12px;
+    }
+    .discovery-number {
+      font-family: var(--font-story); font-size: clamp(80px,14vw,160px); font-weight: 900;
+      line-height: 1; color: rgba(255,255,255,0.04); position: absolute;
+      top: -20px; left: -10px; pointer-events: none; letter-spacing: -0.04em;
+    }
+    .discovery-info { position: relative; }
+    .discovery-region {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.6); font-size: 11px; font-family: var(--font-story);
+      font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 4px 12px; border-radius: 100px; margin-bottom: 20px;
+    }
+    .discovery-info h2 {
+      font-family: var(--font-story); font-size: clamp(36px,5vw,64px);
+      font-weight: 900; line-height: 1.05; letter-spacing: -0.02em; color: #fff; margin-bottom: 16px;
+    }
+    .discovery-info p {
+      font-size: 16px; color: rgba(237,233,254,0.65); line-height: 1.75;
+      max-width: 420px; margin-bottom: 32px;
+    }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--violet); color: #fff; font-family: var(--font-story);
+      font-size: 15px; font-weight: 700; padding: 14px 28px; border-radius: 100px;
+      text-decoration: none; cursor: pointer; transition: transform 0.2s, background 0.2s;
+      box-shadow: 0 4px 24px rgba(124,58,237,0.45);
+    }
+    .btn-primary:hover { transform: translateY(-2px); background: #6D28D9; }
+    .btn-outline {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent; color: rgba(255,255,255,0.75); font-family: var(--font-story);
+      font-size: 14px; font-weight: 600; padding: 12px 24px; border-radius: 100px;
+      text-decoration: none; border: 1px solid rgba(255,255,255,0.2);
+      cursor: pointer; transition: all 0.2s; margin-left: 12px;
+    }
+    .btn-outline:hover { border-color: rgba(255,255,255,0.4); color: #fff; }
+
+    .discovery-product { position: relative; display: flex; align-items: center; justify-content: center; }
+    .product-cloud-wrap { position: relative; width: 100%; aspect-ratio: 1; max-width: 480px; }
+    .product-cloud-left, .product-cloud-right {
+      position: absolute; top: 10%; width: 55%; z-index: 10; pointer-events: none;
+    }
+    .product-cloud-left  { left: -5%; }
+    .product-cloud-right { right: -5%; transform: scaleX(-1); }
+    .product-svg-wrap {
+      position: absolute; inset: 5%; display: flex; align-items: center; justify-content: center;
+      opacity: 0; transform: scale(0.85);
+    }
+
+    /* ─── NAP OBSERVATORY ─────────────────────────────────── */
+    #observatory {
+      padding: 100px 5vw; background: linear-gradient(to bottom, #130B38, var(--space));
+      text-align: center;
+    }
+    #observatory h2 { font-family: var(--font-story); font-size: clamp(32px,5vw,56px); font-weight: 900; letter-spacing: -0.02em; margin-bottom: 12px; }
+    #observatory h2 span { color: var(--lilac); }
+    #observatory .sub { color: rgba(196,181,253,0.65); font-size: 16px; margin-bottom: 56px; }
+    .obs-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(220px,1fr)); gap: 16px; max-width: 1100px; margin: 0 auto; }
+    .obs-card {
+      aspect-ratio: 1; border-radius: 20px; background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(196,181,253,0.15); display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 8px; color: rgba(196,181,253,0.4);
+      font-family: var(--font-story); font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.3s; overflow: hidden; position: relative;
+    }
+    .obs-card:hover { border-color: rgba(196,181,253,0.35); background: rgba(255,255,255,0.08); transform: translateY(-3px); }
+    .obs-card .citizen { position: absolute; bottom: 12px; right: 12px; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(245,158,11,0.6); background: rgba(245,158,11,0.1); padding: 2px 8px; border-radius: 100px; }
+
+    /* ─── CTA ─────────────────────────────────────────────── */
+    #cta {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; text-align: center;
+      position: relative; overflow: hidden;
+      background: linear-gradient(to bottom, var(--space) 0%, #090420 100%); padding: 80px 5vw;
+    }
+    #cta-planet { position: absolute; bottom: -20vh; left: 50%; transform: translateX(-50%); width: 90vw; max-width: 900px; opacity: 0; pointer-events: none; }
+    #cta-content { position: relative; z-index: 2; }
+    #cta-content .eyebrow { font-family: var(--font-story); font-size: 12px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gold); margin-bottom: 20px; }
+    #cta-content h2 { font-family: var(--font-story); font-size: clamp(42px,7vw,88px); font-weight: 900; line-height: 1.05; letter-spacing: -0.025em; max-width: 700px; margin: 0 auto 20px; }
+    #cta-content p { color: rgba(196,181,253,0.65); font-size: 18px; max-width: 500px; margin: 0 auto 40px; line-height: 1.7; }
+    .cta-buttons { display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap; }
+    .cta-note { margin-top: 32px; font-size: 13px; color: rgba(196,181,253,0.4); font-family: var(--font-story); }
+  </style>
+</head>
+<body>
+
+<canvas id="star-canvas"></canvas>
+
+<nav id="nav">
+  <a class="nav-logo" href="#">Couch<span>Petato</span></a>
+  <a class="nav-cta" href="#cta">Configure Yours →</a>
+</nav>
+
+<!-- ═══════════════════ HERO ═══════════════════════════════ -->
+<section id="hero" class="section">
+  <div class="badge" id="hero-badge">🐾 A Couch Petato Expedition</div>
+  <h1 id="hero-headline">Discover<br /><span>Petatopia</span></h1>
+  <p id="hero-sub">A world discovered entirely by accident — where every surface exists for one reason: the absolute comfort of your pet.</p>
+
+  <div id="rocket-wrap">
+    <!-- ── THE COZY ROCKET ─────────────────────────────────────── -->
+    <svg id="rocket-svg" viewBox="0 0 260 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="rbG" x1="64" y1="20" x2="196" y2="290" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#2D1869"/>
+        </linearGradient>
+        <linearGradient id="rcG" x1="68" y1="162" x2="192" y2="228" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#9D7CF0"/><stop offset="100%" stop-color="#5B21B6"/>
+        </linearGradient>
+        <radialGradient id="rpG" cx="50%" cy="40%" r="50%">
+          <stop offset="0%" stop-color="#1A0A52"/><stop offset="100%" stop-color="#0D0926"/>
+        </radialGradient>
+        <linearGradient id="rl1" x1="42" y1="248" x2="72" y2="320" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#A0693A"/><stop offset="100%" stop-color="#6B3F1A"/>
+        </linearGradient>
+        <linearGradient id="rl2" x1="188" y1="248" x2="218" y2="320" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#A0693A"/><stop offset="100%" stop-color="#6B3F1A"/>
+        </linearGradient>
+      </defs>
+      <!-- Body -->
+      <path d="M130 18C155 18 186 54 193 110L197 260C197 276 165 292 130 292C95 292 63 276 63 260L67 110C74 54 105 18 130 18Z" fill="url(#rbG)"/>
+      <!-- Cushion band -->
+      <path d="M67 174C67 167 95 161 130 161C165 161 193 167 193 174L193 217C193 224 165 230 130 230C95 230 67 224 67 217Z" fill="url(#rcG)"/>
+      <line x1="99" y1="161" x2="99" y2="230" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+      <line x1="130" y1="161" x2="130" y2="230" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+      <line x1="161" y1="161" x2="161" y2="230" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+      <line x1="71" y1="195" x2="189" y2="195" stroke="rgba(255,255,255,0.14)" stroke-width="1.5"/>
+      <circle cx="115" cy="178" r="3" fill="rgba(255,255,255,0.18)"/>
+      <circle cx="145" cy="178" r="3" fill="rgba(255,255,255,0.18)"/>
+      <circle cx="115" cy="212" r="3" fill="rgba(255,255,255,0.18)"/>
+      <circle cx="145" cy="212" r="3" fill="rgba(255,255,255,0.18)"/>
+      <!-- Porthole -->
+      <circle cx="130" cy="105" r="46" fill="rgba(0,0,0,0.28)"/>
+      <circle cx="130" cy="105" r="44" fill="url(#rpG)"/>
+      <circle cx="130" cy="105" r="44" fill="none" stroke="#DCA05A" stroke-width="5"/>
+      <!-- Captain Biso face -->
+      <circle cx="130" cy="108" r="33" fill="#C8833A"/>
+      <ellipse cx="100" cy="101" rx="15" ry="21" fill="#B8721F" transform="rotate(-15 100 101)"/>
+      <ellipse cx="160" cy="101" rx="15" ry="21" fill="#B8721F" transform="rotate(15 160 101)"/>
+      <ellipse cx="100" cy="101" rx="9" ry="15" fill="#D4924A" transform="rotate(-15 100 101)"/>
+      <ellipse cx="160" cy="101" rx="9" ry="15" fill="#D4924A" transform="rotate(15 160 101)"/>
+      <ellipse cx="130" cy="97" rx="22" ry="17" fill="#DCA05A" opacity="0.55"/>
+      <circle cx="117" cy="103" r="8" fill="#3B1F0A"/>
+      <circle cx="143" cy="103" r="8" fill="#3B1F0A"/>
+      <circle cx="119" cy="101" r="3.5" fill="#fff" opacity="0.9"/>
+      <circle cx="145" cy="101" r="3.5" fill="#fff" opacity="0.9"/>
+      <circle cx="120" cy="101" r="1.5" fill="#fff"/>
+      <circle cx="146" cy="101" r="1.5" fill="#fff"/>
+      <ellipse cx="130" cy="116" rx="7" ry="5" fill="#2A1008"/>
+      <path d="M118 124Q130 133 142 124" stroke="#2A1008" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M85 136Q130 146 175 136L180 156Q130 166 80 156Z" fill="rgba(237,233,254,0.9)"/>
+      <!-- Suit seam -->
+      <path d="M80 154Q130 164 180 154" stroke="rgba(124,58,237,0.35)" stroke-width="2" fill="none"/>
+      <!-- Glass glint -->
+      <ellipse cx="116" cy="79" rx="11" ry="7" fill="rgba(255,255,255,0.1)" transform="rotate(-20 116 79)"/>
+      <!-- Fins / couch legs -->
+      <path d="M67 249C55 251 42 276 44 301C46 316 58 321 64 309L72 271Z" fill="url(#rl1)"/>
+      <path d="M193 249C205 251 218 276 216 301C214 316 202 321 196 309L188 271Z" fill="url(#rl2)"/>
+      <!-- Nozzle -->
+      <rect x="108" y="285" width="44" height="16" rx="8" fill="#2D1869"/>
+      <rect x="115" y="301" width="30" height="10" rx="5" fill="#1A0A52"/>
+      <!-- Exhaust puffs -->
+      <ellipse id="puff1" cx="130" cy="326" rx="18" ry="10" fill="rgba(196,181,253,0.22)"/>
+      <ellipse id="puff2" cx="130" cy="343" rx="12" ry="7" fill="rgba(124,58,237,0.14)"/>
+      <ellipse id="puff3" cx="130" cy="357" rx="7" ry="5" fill="rgba(124,58,237,0.07)"/>
+      <!-- Label -->
+      <text x="130" y="157" text-anchor="middle" font-family="Nunito,sans-serif" font-size="8.5" font-weight="800" fill="rgba(255,255,255,0.45)" letter-spacing="2">PETATO EXPRESS</text>
+    </svg>
+  </div>
+
+  <div id="scroll-hint">
+    <span>Begin journey</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════ JOURNEY ════════════════════════════ -->
+<section id="journey" class="section">
+  <div id="journey-inner">
+    <!-- Journey text captions -->
+    <div id="journey-text">
+      <div class="journey-caption" id="jcap-0">Leaving orbit…<span class="journey-sub"><br/>Captain Biso has charted a course beyond the known.</span></div>
+      <div class="journey-caption" id="jcap-1">Planet <span style="color:#D4ED6A">Fetch</span><span class="journey-sub"><br/>72 million tennis balls orbit its golden atmosphere.</span></div>
+      <div class="journey-caption" id="jcap-2">Planet <span style="color:#E8C080">Treatos</span><span class="journey-sub"><br/>It smells unbelievably good from here.</span></div>
+      <div class="journey-caption" id="jcap-3">Planet <span style="color:#5ECFCE">Zoomies</span><span class="journey-sub"><br/>No one has ever successfully landed there.</span></div>
+      <div class="journey-caption" id="jcap-4">There — on the horizon.<span class="journey-sub" style="color:rgba(245,158,11,0.85)"><br/>We've found it.</span></div>
+    </div>
+
+    <!-- Journey Rocket (copy, positioned by GSAP) -->
+    <svg id="journey-rocket" viewBox="0 0 260 380" fill="none">
+      <defs>
+        <linearGradient id="jrbG" x1="64" y1="20" x2="196" y2="290" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#7C3AED"/><stop offset="100%" stop-color="#2D1869"/>
+        </linearGradient>
+        <linearGradient id="jrcG" x1="68" y1="162" x2="192" y2="228" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#9D7CF0"/><stop offset="100%" stop-color="#5B21B6"/>
+        </linearGradient>
+        <radialGradient id="jrpG" cx="50%" cy="40%" r="50%">
+          <stop offset="0%" stop-color="#1A0A52"/><stop offset="100%" stop-color="#0D0926"/>
+        </radialGradient>
+        <linearGradient id="jrl1" x1="42" y1="248" x2="72" y2="320" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#A0693A"/><stop offset="100%" stop-color="#6B3F1A"/>
+        </linearGradient>
+        <linearGradient id="jrl2" x1="188" y1="248" x2="218" y2="320" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="#A0693A"/><stop offset="100%" stop-color="#6B3F1A"/>
+        </linearGradient>
+      </defs>
+      <path d="M130 18C155 18 186 54 193 110L197 260C197 276 165 292 130 292C95 292 63 276 63 260L67 110C74 54 105 18 130 18Z" fill="url(#jrbG)"/>
+      <path d="M67 174C67 167 95 161 130 161C165 161 193 167 193 174L193 217C193 224 165 230 130 230C95 230 67 224 67 217Z" fill="url(#jrcG)"/>
+      <line x1="99" y1="161" x2="99" y2="230" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+      <line x1="130" y1="161" x2="130" y2="230" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+      <line x1="161" y1="161" x2="161" y2="230" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+      <line x1="71" y1="195" x2="189" y2="195" stroke="rgba(255,255,255,0.12)" stroke-width="1.5"/>
+      <circle cx="130" cy="105" r="44" fill="url(#jrpG)"/>
+      <circle cx="130" cy="105" r="44" fill="none" stroke="#DCA05A" stroke-width="5"/>
+      <circle cx="130" cy="108" r="33" fill="#C8833A"/>
+      <ellipse cx="100" cy="101" rx="14" ry="20" fill="#B8721F" transform="rotate(-15 100 101)"/>
+      <ellipse cx="160" cy="101" rx="14" ry="20" fill="#B8721F" transform="rotate(15 160 101)"/>
+      <circle cx="117" cy="103" r="8" fill="#3B1F0A"/>
+      <circle cx="143" cy="103" r="8" fill="#3B1F0A"/>
+      <circle cx="119" cy="101" r="3" fill="#fff" opacity="0.9"/>
+      <circle cx="145" cy="101" r="3" fill="#fff" opacity="0.9"/>
+      <ellipse cx="130" cy="116" rx="7" ry="5" fill="#2A1008"/>
+      <path d="M118 124Q130 132 142 124" stroke="#2A1008" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M67 249C55 251 42 276 44 301C46 316 58 321 64 309L72 271Z" fill="url(#jrl1)"/>
+      <path d="M193 249C205 251 218 276 216 301C214 316 202 321 196 309L188 271Z" fill="url(#jrl2)"/>
+      <rect x="108" y="285" width="44" height="16" rx="8" fill="#2D1869"/>
+      <text x="130" y="157" text-anchor="middle" font-family="Nunito,sans-serif" font-size="8.5" font-weight="800" fill="rgba(255,255,255,0.38)" letter-spacing="2">PETATO EXPRESS</text>
+    </svg>
+
+    <!-- Planet Fetch (tennis ball world) -->
+    <svg id="planet-fetch" class="planet" viewBox="0 0 400 400" fill="none">
+      <defs>
+        <radialGradient id="fetchG" cx="38%" cy="35%" r="60%">
+          <stop offset="0%" stop-color="#E8F87A"/><stop offset="55%" stop-color="#BEDC3C"/><stop offset="100%" stop-color="#7A9E10"/>
+        </radialGradient>
+        <clipPath id="fetchC"><circle cx="200" cy="200" r="180"/></clipPath>
+      </defs>
+      <circle cx="200" cy="200" r="200" fill="rgba(190,220,60,0.08)"/>
+      <circle cx="200" cy="200" r="180" fill="url(#fetchG)"/>
+      <path d="M20 200Q100 100 200 200Q300 300 380 200" stroke="rgba(255,255,255,0.42)" stroke-width="13" fill="none" stroke-linecap="round" clip-path="url(#fetchC)"/>
+      <path d="M200 20Q100 100 200 200Q300 300 200 380" stroke="rgba(255,255,255,0.42)" stroke-width="13" fill="none" stroke-linecap="round" clip-path="url(#fetchC)"/>
+      <ellipse cx="150" cy="130" rx="55" ry="38" fill="rgba(255,255,255,0.18)" transform="rotate(-15 150 130)"/>
+      <!-- Orbiting tennis ball -->
+      <circle cx="338" cy="88" r="22" fill="#D4ED6A" opacity="0.85"/>
+      <path d="M329 88Q338 81 347 88" stroke="rgba(255,255,255,0.5)" stroke-width="4" fill="none"/>
+      <circle cx="60" cy="312" r="15" fill="#C8E050" opacity="0.7"/>
+    </svg>
+
+    <!-- Planet Treatos (giant biscuit world) -->
+    <svg id="planet-treatos" class="planet" viewBox="0 0 380 380" fill="none">
+      <defs>
+        <radialGradient id="treatG" cx="40%" cy="35%" r="60%">
+          <stop offset="0%" stop-color="#F5D5A0"/><stop offset="50%" stop-color="#D4973A"/><stop offset="100%" stop-color="#8B5A1A"/>
+        </radialGradient>
+        <clipPath id="treatC"><circle cx="190" cy="190" r="165"/></clipPath>
+      </defs>
+      <circle cx="190" cy="190" r="185" fill="rgba(212,151,58,0.1)"/>
+      <circle cx="190" cy="190" r="165" fill="url(#treatG)"/>
+      <g clip-path="url(#treatC)" opacity="0.22">
+        <line x1="25" y1="95" x2="355" y2="95" stroke="#6B3F1A" stroke-width="2"/>
+        <line x1="25" y1="145" x2="355" y2="145" stroke="#6B3F1A" stroke-width="2"/>
+        <line x1="25" y1="195" x2="355" y2="195" stroke="#6B3F1A" stroke-width="2"/>
+        <line x1="25" y1="245" x2="355" y2="245" stroke="#6B3F1A" stroke-width="2"/>
+        <line x1="25" y1="295" x2="355" y2="295" stroke="#6B3F1A" stroke-width="2"/>
+        <line x1="95" y1="25" x2="95" y2="355" stroke="#6B3F1A" stroke-width="2"/>
+        <line x1="145" y1="25" x2="145" y2="355" stroke="#6B3F1A" stroke-width="2"/>
+        <line x1="195" y1="25" x2="195" y2="355" stroke="#6B3F1A" stroke-width="2"/>
+        <line x1="245" y1="25" x2="245" y2="355" stroke="#6B3F1A" stroke-width="2"/>
+        <line x1="295" y1="25" x2="295" y2="355" stroke="#6B3F1A" stroke-width="2"/>
+      </g>
+      <g clip-path="url(#treatC)">
+        <ellipse cx="140" cy="150" rx="12" ry="8" fill="#5A2D0C" opacity="0.6" transform="rotate(-20 140 150)"/>
+        <ellipse cx="240" cy="130" rx="10" ry="7" fill="#5A2D0C" opacity="0.6" transform="rotate(10 240 130)"/>
+        <ellipse cx="180" cy="230" rx="11" ry="7" fill="#5A2D0C" opacity="0.5" transform="rotate(-30 180 230)"/>
+        <ellipse cx="270" cy="210" rx="9" ry="6" fill="#5A2D0C" opacity="0.5" transform="rotate(15 270 210)"/>
+      </g>
+      <ellipse cx="145" cy="125" rx="50" ry="35" fill="rgba(255,255,255,0.17)" transform="rotate(-10 145 125)"/>
+      <!-- Waft/smell wisps -->
+      <path d="M230 30Q238 18 230 8" stroke="rgba(255,220,150,0.5)" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <path d="M250 22Q262 8 252 -4" stroke="rgba(255,220,150,0.4)" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M268 32Q276 18 268 6" stroke="rgba(255,220,150,0.3)" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </svg>
+
+    <!-- Planet Zoomies (speed planet) -->
+    <svg id="planet-zoomies" class="planet" viewBox="0 0 360 360" fill="none">
+      <defs>
+        <radialGradient id="zoomG" cx="40%" cy="35%" r="60%">
+          <stop offset="0%" stop-color="#A0F0EE"/><stop offset="50%" stop-color="#2DBFBD"/><stop offset="100%" stop-color="#0D7070"/>
+        </radialGradient>
+      </defs>
+      <!-- Speed rings -->
+      <ellipse cx="180" cy="180" rx="215" ry="55" fill="none" stroke="rgba(100,220,218,0.14)" stroke-width="20" transform="rotate(-25 180 180)"/>
+      <ellipse cx="180" cy="180" rx="192" ry="46" fill="none" stroke="rgba(100,220,218,0.11)" stroke-width="14" transform="rotate(-25 180 180)"/>
+      <ellipse cx="180" cy="180" rx="170" ry="38" fill="none" stroke="rgba(100,220,218,0.09)" stroke-width="10" transform="rotate(-25 180 180)"/>
+      <circle cx="180" cy="180" r="155" fill="url(#zoomG)"/>
+      <!-- Motion streaks -->
+      <g opacity="0.28">
+        <path d="M28 160Q90 154 152 164Q214 174 272 168Q314 163 342 156" stroke="#fff" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <path d="M32 180Q94 174 156 184Q218 194 276 188Q318 183 344 175" stroke="#fff" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+        <path d="M36 200Q98 195 160 204Q222 213 280 207Q320 202 345 196" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+      </g>
+      <ellipse cx="140" cy="120" rx="50" ry="35" fill="rgba(255,255,255,0.2)" transform="rotate(-15 140 120)"/>
+    </svg>
+
+    <!-- Petatopia (the destination) -->
+    <svg id="planet-petato" class="planet" viewBox="0 0 700 700" fill="none">
+      <defs>
+        <radialGradient id="ppG" cx="42%" cy="38%" r="58%">
+          <stop offset="0%" stop-color="#F5F0FF"/><stop offset="40%" stop-color="#C4B5FD"/><stop offset="75%" stop-color="#8B5CF6"/><stop offset="100%" stop-color="#4C1D95"/>
+        </radialGradient>
+        <radialGradient id="ppGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="55%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(245,158,11,0.22)"/>
+        </radialGradient>
+        <clipPath id="ppC"><circle cx="350" cy="350" r="305"/></clipPath>
+      </defs>
+      <circle cx="350" cy="350" r="350" fill="url(#ppGlow)"/>
+      <circle cx="350" cy="350" r="305" fill="url(#ppG)"/>
+      <g clip-path="url(#ppC)" opacity="0.82">
+        <ellipse cx="220" cy="200" rx="90" ry="45" fill="rgba(255,255,255,0.7)"/>
+        <ellipse cx="200" cy="190" rx="70" ry="40" fill="rgba(255,255,255,0.8)"/>
+        <ellipse cx="240" cy="195" rx="75" ry="38" fill="rgba(255,255,255,0.75)"/>
+        <ellipse cx="460" cy="280" rx="80" ry="40" fill="rgba(255,255,255,0.65)"/>
+        <ellipse cx="490" cy="270" rx="65" ry="35" fill="rgba(255,255,255,0.7)"/>
+        <ellipse cx="320" cy="460" rx="100" ry="48" fill="rgba(255,255,255,0.55)"/>
+        <ellipse cx="300" cy="450" rx="75" ry="38" fill="rgba(255,255,255,0.65)"/>
+      </g>
+      <!-- Floating islands -->
+      <g clip-path="url(#ppC)">
+        <ellipse cx="310" cy="310" rx="38" ry="16" fill="#7C5C3A" opacity="0.75"/>
+        <rect x="292" y="295" width="36" height="15" rx="4" fill="#5A3E25" opacity="0.65"/>
+        <rect x="301" y="283" width="18" height="13" fill="#E8A87C" opacity="0.85"/>
+        <path d="M298 283L310 272L322 283Z" fill="#D4634A" opacity="0.85"/>
+        <ellipse cx="452" cy="382" rx="28" ry="12" fill="#7C5C3A" opacity="0.65"/>
+        <rect x="450" y="368" width="4" height="14" fill="#5A3E25" opacity="0.7"/>
+        <circle cx="452" cy="365" r="9" fill="#4CAF50" opacity="0.75"/>
+      </g>
+      <ellipse cx="270" cy="230" rx="80" ry="55" fill="rgba(255,255,255,0.13)" transform="rotate(-15 270 230)"/>
+      <circle cx="350" cy="350" r="305" fill="none" stroke="rgba(245,158,11,0.18)" stroke-width="22"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════ APPROACH ═══════════════════════════ -->
+<section id="approach" class="section">
+  <div id="approach-inner">
+    <div id="approach-text"><h2>Approaching Petatopia</h2></div>
+    <div id="approach-glow"></div>
+    <svg id="approach-planet" viewBox="0 0 700 700" fill="none">
+      <defs>
+        <radialGradient id="apG" cx="42%" cy="38%" r="58%">
+          <stop offset="0%" stop-color="#F5F0FF"/><stop offset="40%" stop-color="#C4B5FD"/><stop offset="75%" stop-color="#8B5CF6"/><stop offset="100%" stop-color="#4C1D95"/>
+        </radialGradient>
+        <radialGradient id="apGlow" cx="50%" cy="50%" r="50%">
+          <stop offset="50%" stop-color="transparent"/><stop offset="100%" stop-color="rgba(245,158,11,0.28)"/>
+        </radialGradient>
+        <clipPath id="apC"><circle cx="350" cy="350" r="305"/></clipPath>
+      </defs>
+      <circle cx="350" cy="350" r="350" fill="url(#apGlow)"/>
+      <circle cx="350" cy="350" r="305" fill="url(#apG)"/>
+      <g clip-path="url(#apC)" opacity="0.78">
+        <ellipse cx="220" cy="200" rx="90" ry="45" fill="rgba(255,255,255,0.7)"/>
+        <ellipse cx="200" cy="190" rx="70" ry="40" fill="rgba(255,255,255,0.8)"/>
+        <ellipse cx="240" cy="195" rx="75" ry="38" fill="rgba(255,255,255,0.75)"/>
+        <ellipse cx="460" cy="280" rx="80" ry="40" fill="rgba(255,255,255,0.65)"/>
+        <ellipse cx="320" cy="460" rx="100" ry="48" fill="rgba(255,255,255,0.55)"/>
+        <ellipse cx="300" cy="450" rx="75" ry="38" fill="rgba(255,255,255,0.65)"/>
+        <ellipse cx="310" cy="310" rx="45" ry="20" fill="#7C5C3A" opacity="0.8"/>
+        <rect x="293" y="292" width="38" height="18" rx="4" fill="#5A3E25" opacity="0.7"/>
+        <rect x="300" y="278" width="20" height="15" fill="#E8A87C" opacity="0.9"/>
+        <path d="M297 278L310 265L323 278Z" fill="#D4634A" opacity="0.9"/>
+        <rect x="313" y="272" width="5" height="7" fill="rgba(255,255,255,0.8)"/>
+      </g>
+      <ellipse cx="270" cy="230" rx="80" ry="55" fill="rgba(255,255,255,0.11)" transform="rotate(-15 270 230)"/>
+      <circle cx="350" cy="350" r="305" fill="none" stroke="rgba(245,158,11,0.12)" stroke-width="28"/>
+    </svg>
+  </div>
+</section>
+
+<!-- ═══════════════════ WELCOME ════════════════════════════ -->
+<section id="welcome" class="section">
+  <svg id="welcome-clouds-left" viewBox="0 0 500 800" preserveAspectRatio="xMinYMid meet" fill="none">
+    <ellipse cx="300" cy="250" rx="285" ry="162" fill="rgba(237,233,254,0.95)"/>
+    <ellipse cx="355" cy="305" rx="262" ry="142" fill="rgba(255,255,255,0.9)"/>
+    <ellipse cx="248" cy="202" rx="242" ry="122" fill="rgba(237,233,254,0.85)"/>
+    <ellipse cx="382" cy="385" rx="202" ry="122" fill="rgba(255,255,255,0.8)"/>
+    <ellipse cx="198" cy="425" rx="252" ry="132" fill="rgba(237,233,254,0.75)"/>
+    <ellipse cx="322" cy="505" rx="282" ry="142" fill="rgba(255,255,255,0.7)"/>
+    <ellipse cx="148" cy="605" rx="305" ry="152" fill="rgba(237,233,254,0.65)"/>
+    <ellipse cx="362" cy="655" rx="262" ry="132" fill="rgba(255,255,255,0.6)"/>
+    <ellipse cx="402" cy="755" rx="222" ry="122" fill="rgba(237,233,254,0.7)"/>
+  </svg>
+  <svg id="welcome-clouds-right" viewBox="0 0 500 800" preserveAspectRatio="xMinYMid meet" fill="none">
+    <ellipse cx="300" cy="250" rx="285" ry="162" fill="rgba(237,233,254,0.95)"/>
+    <ellipse cx="355" cy="305" rx="262" ry="142" fill="rgba(255,255,255,0.9)"/>
+    <ellipse cx="248" cy="202" rx="242" ry="122" fill="rgba(237,233,254,0.85)"/>
+    <ellipse cx="382" cy="385" rx="202" ry="122" fill="rgba(255,255,255,0.8)"/>
+    <ellipse cx="198" cy="425" rx="252" ry="132" fill="rgba(237,233,254,0.75)"/>
+    <ellipse cx="322" cy="505" rx="282" ry="142" fill="rgba(255,255,255,0.7)"/>
+    <ellipse cx="148" cy="605" rx="305" ry="152" fill="rgba(237,233,254,0.65)"/>
+    <ellipse cx="362" cy="655" rx="262" ry="132" fill="rgba(255,255,255,0.6)"/>
+    <ellipse cx="402" cy="755" rx="222" ry="122" fill="rgba(237,233,254,0.7)"/>
+  </svg>
+  <div id="welcome-content">
+    <div class="eyebrow">✦ You've arrived ✦</div>
+    <h1>Welcome to<br />Petatopia</h1>
+    <p>A world discovered by Captain Biso.<br />Brought home by Couch Petato.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════ DISCOVERY 001 ══════════════════════ -->
+<section id="discovery-001" class="discovery-section section">
+  <div class="discovery-inner">
+    <div class="discovery-info">
+      <div class="discovery-number">001</div>
+      <div class="discovery-label">Discovery No. 001</div>
+      <div class="discovery-region">☁️ Cloud District</div>
+      <h2>The Circle<br />Couch</h2>
+      <p>Discovered floating in the Cloud District, where pets drift between soft formations and warm afternoon light. Its perfectly curved form invites infinite nap positions.</p>
+      <div>
+        <a class="btn-primary" href="#">Configure Yours →</a>
+        <a class="btn-outline" href="#">View Details</a>
+      </div>
+    </div>
+    <div class="discovery-product">
+      <div class="product-cloud-wrap">
+        <svg class="product-cloud-left" viewBox="0 0 300 200" fill="none">
+          <ellipse cx="200" cy="120" rx="182" ry="92" fill="rgba(237,233,254,0.92)"/>
+          <ellipse cx="222" cy="100" rx="152" ry="76" fill="rgba(255,255,255,0.85)"/>
+          <ellipse cx="168" cy="142" rx="162" ry="72" fill="rgba(237,233,254,0.8)"/>
+          <ellipse cx="242" cy="162" rx="122" ry="62" fill="rgba(255,255,255,0.75)"/>
+        </svg>
+        <svg class="product-cloud-right" viewBox="0 0 300 200" fill="none">
+          <ellipse cx="200" cy="120" rx="182" ry="92" fill="rgba(237,233,254,0.92)"/>
+          <ellipse cx="222" cy="100" rx="152" ry="76" fill="rgba(255,255,255,0.85)"/>
+          <ellipse cx="168" cy="142" rx="162" ry="72" fill="rgba(237,233,254,0.8)"/>
+          <ellipse cx="242" cy="162" rx="122" ry="62" fill="rgba(255,255,255,0.75)"/>
+        </svg>
+        <div class="product-svg-wrap" id="prod-001">
+          <!-- Circle Couch with sleeping cat -->
+          <svg viewBox="0 0 420 400" fill="none">
+            <defs>
+              <radialGradient id="cc1G" cx="50%" cy="40%" r="55%">
+                <stop offset="0%" stop-color="#D4B896"/><stop offset="100%" stop-color="#A07850"/>
+              </radialGradient>
+              <radialGradient id="cc1In" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stop-color="#E8D5B8"/><stop offset="100%" stop-color="#C4A060"/>
+              </radialGradient>
+            </defs>
+            <!-- Drop shadow -->
+            <ellipse cx="210" cy="372" rx="145" ry="16" fill="rgba(0,0,0,0.18)"/>
+            <!-- Outer donut -->
+            <ellipse cx="210" cy="218" rx="168" ry="80" fill="url(#cc1G)"/>
+            <!-- Inner wall -->
+            <ellipse cx="210" cy="206" rx="100" ry="48" fill="url(#cc1In)"/>
+            <!-- Inner well -->
+            <ellipse cx="210" cy="204" rx="78" ry="38" fill="#B8905A"/>
+            <ellipse cx="210" cy="200" rx="65" ry="30" fill="rgba(0,0,0,0.11)"/>
+            <!-- Fabric texture highlights -->
+            <path d="M62 206Q102 174 164 182" stroke="rgba(255,255,255,0.2)" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <path d="M248 182Q308 174 350 206" stroke="rgba(255,255,255,0.2)" stroke-width="3" fill="none" stroke-linecap="round"/>
+            <!-- Sleeping cat -->
+            <ellipse cx="210" cy="200" rx="44" ry="22" fill="#D4B28A" transform="rotate(-4 210 200)"/>
+            <!-- Tail curl -->
+            <path d="M250 202Q274 190 270 177Q266 165 257 170" stroke="#D4B28A" stroke-width="11" fill="none" stroke-linecap="round"/>
+            <!-- Head -->
+            <circle cx="170" cy="198" r="21" fill="#D4B28A"/>
+            <!-- Ears -->
+            <path d="M160 181L155 168L170 178Z" fill="#D4B28A"/>
+            <path d="M180 179L183 166L191 178Z" fill="#D4B28A"/>
+            <path d="M161 181L157 170L169 179Z" fill="#FFAABB" opacity="0.65"/>
+            <!-- Eyes (sleeping) -->
+            <path d="M163 196Q169 192 176 196" stroke="#8B5E3C" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M162 196Q168 200 175 196" stroke="#8B5E3C" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <!-- ZZZ -->
+            <text x="148" y="180" font-family="Nunito,sans-serif" font-size="11" fill="rgba(255,255,255,0.45)" font-weight="700">z z</text>
+            <!-- Mickey-ear style legs -->
+            <ellipse cx="120" cy="278" rx="20" ry="30" fill="#8B5A2B"/>
+            <ellipse cx="120" cy="267" rx="17" ry="15" fill="#7A4A1F"/>
+            <ellipse cx="162" cy="283" rx="20" ry="30" fill="#8B5A2B"/>
+            <ellipse cx="162" cy="272" rx="17" ry="15" fill="#7A4A1F"/>
+            <ellipse cx="258" cy="278" rx="20" ry="30" fill="#8B5A2B"/>
+            <ellipse cx="258" cy="267" rx="17" ry="15" fill="#7A4A1F"/>
+            <ellipse cx="300" cy="283" rx="20" ry="30" fill="#8B5A2B"/>
+            <ellipse cx="300" cy="272" rx="17" ry="15" fill="#7A4A1F"/>
+            <!-- Top shine -->
+            <ellipse cx="178" cy="192" rx="40" ry="17" fill="rgba(255,255,255,0.11)" transform="rotate(-10 178 192)"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ DISCOVERY 002 ══════════════════════ -->
+<section id="discovery-002" class="discovery-section section">
+  <div class="discovery-inner" style="direction:rtl">
+    <div class="discovery-product" style="direction:ltr">
+      <div class="product-cloud-wrap">
+        <svg class="product-cloud-left" viewBox="0 0 300 200" fill="none">
+          <ellipse cx="200" cy="120" rx="182" ry="92" fill="rgba(254,243,199,0.88)"/>
+          <ellipse cx="222" cy="100" rx="152" ry="76" fill="rgba(255,251,235,0.82)"/>
+          <ellipse cx="168" cy="142" rx="162" ry="72" fill="rgba(254,243,199,0.76)"/>
+        </svg>
+        <svg class="product-cloud-right" viewBox="0 0 300 200" fill="none">
+          <ellipse cx="200" cy="120" rx="182" ry="92" fill="rgba(254,243,199,0.88)"/>
+          <ellipse cx="222" cy="100" rx="152" ry="76" fill="rgba(255,251,235,0.82)"/>
+          <ellipse cx="168" cy="142" rx="162" ry="72" fill="rgba(254,243,199,0.76)"/>
+        </svg>
+        <div class="product-svg-wrap" id="prod-002">
+          <!-- Box Couch with sleeping dog -->
+          <svg viewBox="0 0 440 370" fill="none">
+            <defs>
+              <linearGradient id="bc2T" x1="60" y1="80" x2="360" y2="200" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#E8C890"/><stop offset="100%" stop-color="#C4986A"/>
+              </linearGradient>
+              <linearGradient id="bc2F" x1="60" y1="180" x2="60" y2="305" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#C4986A"/><stop offset="100%" stop-color="#9A6A3C"/>
+              </linearGradient>
+              <linearGradient id="bc2S" x1="320" y1="120" x2="380" y2="305" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#D4A87A"/><stop offset="100%" stop-color="#A87848"/>
+              </linearGradient>
+            </defs>
+            <ellipse cx="218" cy="348" rx="148" ry="15" fill="rgba(0,0,0,0.2)"/>
+            <!-- Isometric box -->
+            <path d="M324 142L376 116L376 288L324 314Z" fill="url(#bc2S)"/>
+            <path d="M62 168L324 142L324 314L62 340Z" fill="url(#bc2F)"/>
+            <path d="M62 168L312 72L376 116L324 142Z" fill="url(#bc2T)"/>
+            <!-- Cushion quilting lines -->
+            <path d="M76 182L308 158" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
+            <path d="M76 232L308 208" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
+            <path d="M76 282L308 258" stroke="rgba(255,255,255,0.14)" stroke-width="2"/>
+            <path d="M158 148L158 316" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+            <path d="M238 140L238 322" stroke="rgba(255,255,255,0.1)" stroke-width="1.5"/>
+            <!-- Rolled armrests -->
+            <ellipse cx="62" cy="168" rx="8" ry="27" fill="#C49060"/>
+            <ellipse cx="324" cy="142" rx="8" ry="27" fill="#C49060"/>
+            <!-- Sleeping dog -->
+            <ellipse cx="196" cy="246" rx="82" ry="40" fill="#C8A870" transform="rotate(-3 196 246)"/>
+            <circle cx="122" cy="248" r="28" fill="#C8A870"/>
+            <ellipse cx="103" cy="258" rx="13" ry="21" fill="#A07838" transform="rotate(10 103 258)"/>
+            <ellipse cx="140" cy="258" rx="13" ry="21" fill="#A07838" transform="rotate(-10 140 258)"/>
+            <ellipse cx="108" cy="254" rx="13" ry="10" fill="#D4B880"/>
+            <path d="M112 244Q119 241 126 244" stroke="#5A3010" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M112 245Q119 249 126 245" stroke="#5A3010" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+            <ellipse cx="108" cy="252" rx="5" ry="3.5" fill="#3B1F0A"/>
+            <ellipse cx="258" cy="260" rx="22" ry="12" fill="#C09060" transform="rotate(-5 258 260)"/>
+            <path d="M272 248Q298 234 294 220Q290 208 282 214" stroke="#C8A870" stroke-width="13" fill="none" stroke-linecap="round"/>
+            <text x="106" y="226" font-family="Nunito,sans-serif" font-size="12" fill="rgba(255,255,255,0.38)" font-weight="700">z z z</text>
+            <!-- Legs -->
+            <rect x="88" y="320" width="22" height="26" rx="5" fill="#8B5A2B"/>
+            <rect x="284" y="302" width="22" height="26" rx="5" fill="#8B5A2B"/>
+            <line x1="94" y1="324" x2="94" y2="340" stroke="rgba(0,0,0,0.15)" stroke-width="1.5"/>
+            <line x1="290" y1="306" x2="290" y2="322" stroke="rgba(0,0,0,0.15)" stroke-width="1.5"/>
+            <!-- Top shine -->
+            <path d="M80 172Q180 157 305 150" stroke="rgba(255,255,255,0.18)" stroke-width="3" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+    <div class="discovery-info" style="direction:ltr">
+      <div class="discovery-number">002</div>
+      <div class="discovery-label">Discovery No. 002</div>
+      <div class="discovery-region">🏜️ Cozy Canyon</div>
+      <h2>The Box<br />Couch</h2>
+      <p>Found nestled in the warm sandstone cliffs of Cozy Canyon, where the afternoon light bakes the rock to perfect sleeping temperature. A den for pets who like walls around their dreams.</p>
+      <div>
+        <a class="btn-primary" href="#">Configure Yours →</a>
+        <a class="btn-outline" href="#">View Details</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ NAP OBSERVATORY ════════════════════ -->
+<section id="observatory" class="section">
+  <div class="badge" style="margin-bottom:20px">🔭 The Nap Observatory</div>
+  <h2>Citizens of <span>Petatopia</span></h2>
+  <p class="sub">Pets who have already made the journey home.</p>
+  <div class="obs-grid">
+    <div class="obs-card"><svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="rgba(124,58,237,0.15)"/><text x="30" y="40" text-anchor="middle" font-size="26">🐶</text></svg><span>Share yours</span><span class="citizen">Citizen #0001</span></div>
+    <div class="obs-card"><svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="rgba(245,158,11,0.12)"/><text x="30" y="40" text-anchor="middle" font-size="26">🐱</text></svg><span>Share yours</span><span class="citizen">Citizen #0002</span></div>
+    <div class="obs-card"><svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="rgba(196,181,253,0.12)"/><text x="30" y="40" text-anchor="middle" font-size="26">🐾</text></svg><span>Your pet here</span><span class="citizen">Citizen #0003</span></div>
+    <div class="obs-card"><svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="rgba(245,158,11,0.12)"/><text x="30" y="40" text-anchor="middle" font-size="26">🐕</text></svg><span>Share yours</span><span class="citizen">Citizen #0004</span></div>
+    <div class="obs-card"><svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="rgba(124,58,237,0.15)"/><text x="30" y="40" text-anchor="middle" font-size="26">😸</text></svg><span>Share yours</span><span class="citizen">Citizen #0005</span></div>
+    <div class="obs-card"><svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="rgba(196,181,253,0.12)"/><text x="30" y="40" text-anchor="middle" font-size="26">🐈</text></svg><span>Your pet here</span><span class="citizen">Citizen #0006</span></div>
+    <div class="obs-card"><svg width="60" height="60" viewBox="0 0 60 60"><circle cx="30" cy="30" r="26" fill="rgba(245,158,11,0.12)"/><text x="30" y="40" text-anchor="middle" font-size="26">🐩</text></svg><span>Share yours</span><span class="citizen">Citizen #0007</span></div>
+    <div class="obs-card" style="border:1px dashed rgba(196,181,253,0.3);cursor:default"><svg width="28" height="28" viewBox="0 0 28 28"><path d="M14 4v20M4 14h20" stroke="rgba(196,181,253,0.4)" stroke-width="2.5" stroke-linecap="round"/></svg><span style="font-size:12px;text-align:center">Tag @couch.petato<br/>to be featured</span></div>
+  </div>
+</section>
+
+<!-- ═══════════════════ CTA ═════════════════════════════════ -->
+<section id="cta" class="section">
+  <svg id="cta-planet" viewBox="0 0 700 700" fill="none">
+    <defs>
+      <radialGradient id="ctaG" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#C4B5FD"/><stop offset="100%" stop-color="#4C1D95"/>
+      </radialGradient>
+    </defs>
+    <circle cx="350" cy="350" r="340" fill="url(#ctaG)"/>
+    <g opacity="0.55">
+      <ellipse cx="200" cy="180" rx="90" ry="45" fill="rgba(255,255,255,0.5)"/>
+      <ellipse cx="460" cy="260" rx="80" ry="40" fill="rgba(255,255,255,0.4)"/>
+      <ellipse cx="300" cy="450" rx="110" ry="52" fill="rgba(255,255,255,0.35)"/>
+    </g>
+  </svg>
+  <div id="cta-content">
+    <div class="eyebrow">✦ Bring it home ✦</div>
+    <h2>Every pet deserves<br />a piece of<br /><span style="color:var(--lilac)">Petatopia.</span></h2>
+    <p>Handmade in the UAE. Infinite combinations. Built around one thing — your pet's absolute comfort.</p>
+    <div class="cta-buttons">
+      <a class="btn-primary" href="#" style="font-size:16px;padding:16px 36px">Configure Your Couch →</a>
+      <a class="btn-outline" href="https://instagram.com/couch.petato" target="_blank">@couch.petato ↗</a>
+    </div>
+    <p class="cta-note">🚀 Free shipping across the UAE · Handmade to order · Certified by Captain Biso</p>
+  </div>
+</section>
+
+<script>
+gsap.registerPlugin(ScrollTrigger);
+
+/* ─── STAR CANVAS ─────────────────────────────────────────── */
+(function(){
+  const canvas=document.getElementById('star-canvas');
+  const ctx=canvas.getContext('2d');
+  let W,H,stars=[];
+  const N=260;
+
+  function resize(){W=canvas.width=window.innerWidth;H=canvas.height=window.innerHeight;}
+  function makeStar(){return{x:Math.random()*W,y:Math.random()*H*7,r:Math.random()*1.7+0.3,a:Math.random()*0.7+0.15,speed:Math.random()*0.35+0.08,twinkle:Math.random()*Math.PI*2,warm:Math.random()>0.65};}
+  function init(){resize();stars=Array.from({length:N},makeStar);}
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    const sy=window.scrollY;
+    stars.forEach(s=>{
+      s.twinkle+=0.022;
+      const tw=Math.sin(s.twinkle)*0.3+0.7;
+      const raw=s.y-sy*s.speed;
+      const vy=((raw%(H*7))+(H*7))%(H*7)-H;
+      if(vy<-8||vy>H+8)return;
+      ctx.beginPath();ctx.arc(s.x,vy,s.r,0,Math.PI*2);
+      ctx.fillStyle=s.warm?`rgba(255,240,200,${s.a*tw})`:`rgba(215,215,255,${s.a*tw})`;
+      ctx.fill();
+    });
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize',resize);
+  init();requestAnimationFrame(draw);
+})();
+
+/* ─── GSAP TICKER WAKE (ensures scroll animations run) ────── */
+gsap.ticker.lagSmoothing(0);
+gsap.ticker.wake && gsap.ticker.wake();
+
+/* Rocket idle float */
+gsap.to('#rocket-wrap',{y:-14,duration:3.5,ease:'sine.inOut',yoyo:true,repeat:-1,delay:1.5});
+
+/* Exhaust puffs */
+gsap.to(['#puff1','#puff2','#puff3'],{
+  scaleY:1.5,opacity:0.05,duration:1.2,ease:'sine.inOut',
+  stagger:0.18,yoyo:true,repeat:-1,transformOrigin:'center top'
+});
+
+/* ─── NAV handled by CSS animation ─────────────────────────── */
+
+/* ─── JOURNEY ─────────────────────────────────────────────── */
+const caps=['#jcap-0','#jcap-1','#jcap-2','#jcap-3','#jcap-4'];
+caps.forEach(c=>gsap.set(c,{opacity:0,y:16}));
+gsap.set('#journey-rocket',{x:0,y:0,rotation:-8,scale:0.92});
+gsap.set('#planet-fetch',  {x:'54vw', y:'-6vh'});
+gsap.set('#planet-treatos',{x:'63vw', y:'8vh'});
+gsap.set('#planet-zoomies',{x:'58vw', y:'18vh'});
+gsap.set('#planet-petato', {x:'42vw', scale:0.24,opacity:0});
+
+const jTl=gsap.timeline({
+  scrollTrigger:{trigger:'#journey',start:'top top',end:'bottom bottom',scrub:1.8,pin:'#journey-inner'}
+});
+
+jTl
+  .to('#jcap-0',{opacity:1,y:0,duration:1},0)
+  .to('#journey-rocket',{y:'-8vh',rotation:-12,duration:2,ease:'power1.inOut'},0)
+
+  /* Fetch fly-by */
+  .to('#jcap-0',{opacity:0,duration:0.5},1.8)
+  .to('#jcap-1',{opacity:1,y:0,duration:0.8},2.2)
+  .to('#planet-fetch',{x:'-8vw',duration:4.5,ease:'power1.inOut'},1.8)
+  .to('#journey-rocket',{y:'-16vh',x:'-8vw',rotation:-5,duration:3},2.2)
+  .to('#jcap-1',{opacity:0,duration:0.6},5.5)
+  .to('#planet-fetch',{x:'-78vw',opacity:0,duration:2.8,ease:'power2.in'},5.5)
+
+  /* Treatos fly-by */
+  .to('#jcap-2',{opacity:1,y:0,duration:0.8},6.4)
+  .to('#planet-treatos',{x:'-12vw',y:'2vh',duration:4.5,ease:'power1.inOut'},6)
+  .to('#journey-rocket',{x:'5vw',y:'-10vh',rotation:5,duration:3},6.4)
+  .to('#jcap-2',{opacity:0,duration:0.6},10)
+  .to('#planet-treatos',{x:'-82vw',opacity:0,duration:2.8,ease:'power2.in'},10)
+
+  /* Zoomies (fast!) */
+  .to('#jcap-3',{opacity:1,y:0,duration:0.5},11)
+  .to('#planet-zoomies',{x:'-88vw',y:'18vh',opacity:0,duration:1.4,ease:'power3.in'},11)
+  .to('#journey-rocket',{x:'2vw',rotation:-3,duration:1.5},11)
+  .to('#jcap-3',{opacity:0,duration:0.4},12.4)
+
+  /* Petatopia appears */
+  .to('#jcap-4',{opacity:1,y:0,duration:1},13)
+  .to('#planet-petato',{x:'4vw',scale:0.78,opacity:1,duration:5.5,ease:'power2.out'},12.4)
+  .to('#journey-rocket',{x:'-16vw',y:'-6vh',rotation:-8,scale:0.68,duration:4.5},13)
+  .to('#jcap-4',{opacity:0,duration:1},17)
+  .to('#planet-petato',{x:'-6vw',scale:1.15,duration:3},17);
+
+/* ─── APPROACH ────────────────────────────────────────────── */
+gsap.set('#approach-planet',{scale:0.13,opacity:0});
+gsap.set('#approach-text',  {opacity:0});
+
+const apTl=gsap.timeline({
+  scrollTrigger:{trigger:'#approach',start:'top top',end:'bottom bottom',scrub:1.3,pin:'#approach-inner'}
+});
+apTl
+  .to('#approach-planet',{scale:1.65,opacity:1,duration:8,ease:'power1.out'},0)
+  .to('#approach-text',  {opacity:1,duration:2},1)
+  .to('#approach-glow',  {background:'radial-gradient(ellipse at center,rgba(245,158,11,0.16) 0%,transparent 60%)',duration:6},0)
+  .to('#approach-text',  {opacity:0,duration:1.5},6.5)
+  .to('#approach-planet',{scale:3.8,opacity:0,duration:4,ease:'power2.in'},7);
+
+/* ─── WELCOME CLOUDS ──────────────────────────────────────── */
+gsap.set('#welcome-clouds-left', {x:0});
+gsap.set('#welcome-clouds-right',{x:0});
+gsap.set('#welcome-content',     {opacity:0,scale:0.92});
+
+ScrollTrigger.create({
+  trigger:'#welcome',start:'top 82%',once:true,
+  onEnter:()=>{
+    gsap.to('#welcome-clouds-left', {x:'-58%',duration:1.7,ease:'power2.inOut'});
+    gsap.to('#welcome-clouds-right',{x:'58%', duration:1.7,ease:'power2.inOut'});
+    gsap.to('#welcome-content',     {opacity:1,scale:1,duration:1.4,delay:0.65,ease:'back.out(1.5)'});
+  }
+});
+
+/* ─── DISCOVERY REVEALS ───────────────────────────────────── */
+function setupDiscovery(id,dir){
+  const sec=document.querySelector(id);
+  const cL=sec.querySelector('.product-cloud-left');
+  const cR=sec.querySelector('.product-cloud-right');
+  const sv=sec.querySelector('.product-svg-wrap');
+  const inf=sec.querySelector('.discovery-info');
+  gsap.set([cL,cR],{opacity:1,x:0});
+  gsap.set(sv, {opacity:0,scale:0.84});
+  gsap.set(inf,{opacity:0,x:dir*45});
+  ScrollTrigger.create({
+    trigger:sec,start:'top 62%',once:true,
+    onEnter:()=>{
+      gsap.to(cL, {x:'-85%',opacity:0,duration:1.5,ease:'power2.inOut'});
+      gsap.to(cR, {x:'85%', opacity:0,duration:1.5,ease:'power2.inOut'});
+      gsap.to(sv, {opacity:1,scale:1,duration:1.2,delay:0.55,ease:'back.out(1.4)'});
+      gsap.to(inf,{opacity:1,x:0,duration:1.0,delay:0.45,ease:'power2.out'});
+    }
+  });
+}
+setupDiscovery('#discovery-001', 1);
+setupDiscovery('#discovery-002',-1);
+
+/* Product float */
+gsap.to('#prod-001',{y:-10,duration:3.5,ease:'sine.inOut',yoyo:true,repeat:-1});
+gsap.to('#prod-002',{y:-8, duration:4.2,ease:'sine.inOut',yoyo:true,repeat:-1,delay:0.6});
+
+/* ─── OBSERVATORY ─────────────────────────────────────────── */
+gsap.set('.obs-card',{opacity:0,y:26});
+ScrollTrigger.create({
+  trigger:'#observatory',start:'top 72%',once:true,
+  onEnter:()=>gsap.to('.obs-card',{opacity:1,y:0,duration:0.65,stagger:0.1,ease:'power2.out'})
+});
+
+/* ─── CTA ─────────────────────────────────────────────────── */
+gsap.set('#cta-content',{opacity:0,y:42});
+ScrollTrigger.create({
+  trigger:'#cta',start:'top 72%',once:true,
+  onEnter:()=>{
+    gsap.to('#cta-content',{opacity:1,y:0,duration:1.2,ease:'power2.out'});
+    gsap.to('#cta-planet', {opacity:0.14,duration:2,ease:'power2.out'});
+  }
+});
+gsap.to('#cta-planet',{rotation:360,duration:130,ease:'none',repeat:-1,transformOrigin:'center center'});
+
+ScrollTrigger.refresh();
+</script>
+</body>
+</html>
