@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
@@ -86,7 +87,7 @@
     .scroll-arrow{width:14px;height:14px;border-right:2px solid rgba(197,168,124,0.4);border-bottom:2px solid rgba(197,168,124,0.4);transform:rotate(45deg);animation:bounce 1.8s ease-in-out infinite}
 
     /* ── JOURNEY ───────────────────────────────────────────── */
-    #journey{height:600vh}
+    #journey{height:250vh}
     #journey-inner{position:sticky;top:0;height:100vh;overflow:hidden;background:var(--night);display:flex;align-items:center;justify-content:center}
     #j-rocket{position:absolute;width:clamp(95px,13vw,175px);left:50%;top:50%;transform:translate(-50%,-50%);z-index:10;filter:drop-shadow(0 0 18px rgba(197,168,124,0.25))}
     .j-planet{position:absolute;top:50%;transform:translateY(-50%);z-index:5}
@@ -108,7 +109,42 @@
     #lc p{margin-top:16px;font-size:clamp(14px,2vw,19px);color:rgba(237,229,194,0.65);font-weight:400}
 
     /* ── PRODUCTS ──────────────────────────────────────────── */
-    #products{background:var(--grey);padding:80px 5vw 100px}
+    #products{background:var(--grey);padding:80px 0 100px}
+
+    /* 3D Stage */
+    #three-stage{
+      position:relative;width:100%;height:70vh;min-height:500px;max-height:720px;
+      background:linear-gradient(160deg,#FAF6EE 0%,#F0EAD8 50%,#EAE2CE 100%);
+      overflow:hidden;cursor:grab;
+    }
+    #three-stage:active{cursor:grabbing}
+    #three-canvas{position:absolute;inset:0;width:100%!important;height:100%!important}
+    #prod-info{
+      position:absolute;right:5%;top:50%;transform:translateY(-50%);
+      background:rgba(255,255,255,0.92);backdrop-filter:blur(12px);
+      border-radius:20px;padding:24px 28px;min-width:200px;
+      box-shadow:0 8px 40px rgba(139,90,40,0.12);
+      opacity:0;transition:opacity 0.3s;pointer-events:none;
+    }
+    #prod-info.show{opacity:1;pointer-events:auto}
+    #prod-region{font-size:10px;font-weight:800;letter-spacing:0.12em;text-transform:uppercase;color:var(--sand);margin-bottom:6px}
+    #prod-name{font-family:var(--font);font-size:22px;font-weight:900;color:var(--brown);margin-bottom:4px}
+    #prod-price{font-size:18px;font-weight:900;color:var(--brown);margin-bottom:16px}
+    #prod-btn{display:block;background:var(--brown);color:var(--cream);font-family:var(--font);font-size:13px;font-weight:800;padding:10px 20px;border-radius:100px;text-decoration:none;text-align:center;transition:background 0.2s}
+    #prod-btn:hover{background:var(--sand)}
+    #prod-hint{position:absolute;bottom:20px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:rgba(139,90,40,0.4)}
+    #prod-chips{
+      display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+      padding:24px 5vw 0;
+    }
+    .p-chip{
+      background:var(--white);border:1.5px solid rgba(139,90,40,0.15);
+      border-radius:100px;padding:8px 18px;font-family:var(--font);
+      font-size:12px;font-weight:800;color:var(--brown);cursor:pointer;
+      transition:all 0.2s;
+    }
+    .p-chip:hover,.p-chip.active{background:var(--brown);color:var(--cream);border-color:var(--brown)}
+    #old-cv-unused{display:none}
     .ph{text-align:center;margin-bottom:56px}
     .ph .ey{font-size:10px;font-weight:800;letter-spacing:0.15em;text-transform:uppercase;color:var(--brown);margin-bottom:10px}
     .ph h2{font-family:var(--font);font-size:clamp(30px,5vw,52px);font-weight:900;color:var(--brown);letter-spacing:-0.02em;line-height:1.05}
@@ -184,18 +220,29 @@
 
 <!-- ═══ LOADER ═════════════════════════════════════════════ -->
 <div id="loader">
-  <!-- Logo mark SVG -->
   <div class="loader-logo">
-    <svg viewBox="0 0 200 220" width="100" fill="none">
-      <path d="M78 82 L62 42 L92 62Z" fill="#C5A87C" opacity="0.85"/>
-      <path d="M108 68 L104 28 L132 54Z" fill="#C5A87C" opacity="0.85"/>
-      <path d="M112 50 A70 70 0 1 0 112 190 L112 158 A38 38 0 1 1 112 82Z" fill="#C5A87C"/>
-      <path d="M112 82 Q172 120 112 158 L112 82Z" fill="#8B5A28"/>
-      <ellipse cx="162" cy="106" rx="12" ry="15" fill="#8B5A28" transform="rotate(-18 162 106)"/>
-      <ellipse cx="170" cy="128" rx="10" ry="13" fill="#8B5A28" transform="rotate(-8 170 128)"/>
-      <ellipse cx="165" cy="150" rx="9" ry="12" fill="#8B5A28" transform="rotate(8 165 150)"/>
-      <text x="100" y="200" text-anchor="middle" font-family="Nunito,sans-serif" font-size="22" font-weight="900" fill="#C5A87C" letter-spacing="-0.5">couch</text>
-      <text x="100" y="220" text-anchor="middle" font-family="Nunito,sans-serif" font-size="22" font-weight="900" fill="#8B5A28" letter-spacing="-0.5">petato</text>
+    <svg viewBox="0 0 90 115" width="80" fill="none">
+      <defs>
+        <mask id="cm-load">
+          <circle cx="38" cy="40" r="30" fill="white"/>
+          <circle cx="38" cy="40" r="18" fill="black"/>
+          <rect x="38" y="10" width="40" height="60" fill="black"/>
+        </mask>
+      </defs>
+      <!-- Ears -->
+      <path d="M23 24 L16 6 L32 18Z" fill="#C5A87C" opacity="0.82"/>
+      <path d="M40 18 L38 2 L51 14Z" fill="#C5A87C" opacity="0.82"/>
+      <!-- C body -->
+      <rect x="8" y="10" width="64" height="60" fill="#C5A87C" mask="url(#cm-load)"/>
+      <!-- D shape -->
+      <path d="M38 22 L38 58 C66 58 66 22 38 22 Z" fill="#8B5A28"/>
+      <!-- Paw drops -->
+      <ellipse cx="73" cy="29" rx="5" ry="7" fill="#8B5A28" transform="rotate(-22 73 29)"/>
+      <ellipse cx="77" cy="41" rx="4.5" ry="6.5" fill="#8B5A28"/>
+      <ellipse cx="73" cy="53" rx="4" ry="6" fill="#8B5A28" transform="rotate(22 73 53)"/>
+      <!-- Text -->
+      <text x="44" y="87" text-anchor="middle" font-family="Nunito,sans-serif" font-size="19" font-weight="900" fill="#C5A87C" letter-spacing="-0.3">couch</text>
+      <text x="44" y="109" text-anchor="middle" font-family="Nunito,sans-serif" font-size="19" font-weight="900" fill="#8B5A28" letter-spacing="-0.3">petato</text>
     </svg>
   </div>
   <div class="loader-dots">
@@ -209,14 +256,21 @@
 
 <nav id="nav">
   <a class="nav-logo" href="#">
-    <svg viewBox="0 0 80 90" width="30" fill="none">
-      <path d="M32 32 L24 12 L38 22Z" fill="#C5A87C" opacity="0.85"/>
-      <path d="M48 26 L46 6 L58 18Z" fill="#C5A87C" opacity="0.85"/>
-      <path d="M50 20 A28 28 0 1 0 50 76 L50 62 A14 14 0 1 1 50 34Z" fill="#C5A87C"/>
-      <path d="M50 34 Q74 48 50 62 L50 34Z" fill="#8B5A28"/>
-      <ellipse cx="68" cy="42" rx="5" ry="6.5" fill="#8B5A28" transform="rotate(-18 68 42)"/>
-      <ellipse cx="71" cy="52" rx="4.5" ry="6" fill="#8B5A28" transform="rotate(-8 71 52)"/>
-      <ellipse cx="69" cy="62" rx="4" ry="5.5" fill="#8B5A28" transform="rotate(8 69 62)"/>
+    <svg viewBox="0 0 84 68" width="32" fill="none">
+      <defs>
+        <mask id="cm-nav">
+          <circle cx="34" cy="36" r="27" fill="white"/>
+          <circle cx="34" cy="36" r="16" fill="black"/>
+          <rect x="34" y="9" width="38" height="54" fill="black"/>
+        </mask>
+      </defs>
+      <path d="M20 22 L14 7 L28 17Z" fill="#C5A87C" opacity="0.82"/>
+      <path d="M37 16 L35 2 L47 12Z" fill="#C5A87C" opacity="0.82"/>
+      <rect x="7" y="9" width="62" height="56" fill="#C5A87C" mask="url(#cm-nav)"/>
+      <path d="M34 20 L34 52 C60 52 60 20 34 20 Z" fill="#8B5A28"/>
+      <ellipse cx="67" cy="27" rx="4.5" ry="6" fill="#8B5A28" transform="rotate(-22 67 27)"/>
+      <ellipse cx="71" cy="37" rx="4" ry="5.5" fill="#8B5A28"/>
+      <ellipse cx="67" cy="47" rx="3.5" ry="5" fill="#8B5A28" transform="rotate(22 67 47)"/>
     </svg>
     <span class="nav-wordmark"><em>couch</em> petato</span>
   </a>
@@ -570,8 +624,22 @@
     <h2>Discoveries from<br/><em>another world</em></h2>
   </div>
 
-  <!-- Floating carousel view -->
+  <!-- 3D isometric carousel -->
   <div id="cv">
+  <div id="three-stage">
+    <canvas id="three-canvas"></canvas>
+    <!-- Product info overlay -->
+    <div id="prod-info">
+      <div id="prod-region"></div>
+      <div id="prod-name"></div>
+      <div id="prod-price"></div>
+      <a id="prod-btn" href="#">Configure →</a>
+    </div>
+    <div id="prod-hint">Hover a piece to explore · Drag to rotate</div>
+  </div>
+  <!-- Product name chips below canvas -->
+  <div id="prod-chips"></div>
+  <div id="old-cv-unused">
     <div class="p-row">
       <div class="pc" style="animation:floatSway 3.8s ease-in-out infinite">
         <div class="pc-img"><svg viewBox="0 0 200 180" fill="none" style="width:84%"><defs><radialGradient id="pi1" cx="50%" cy="40%" r="55%"><stop offset="0%" stop-color="#E8D0A0"/><stop offset="100%" stop-color="#A07850"/></radialGradient></defs><ellipse cx="100" cy="85" rx="84" ry="40" fill="url(#pi1)"/><ellipse cx="100" cy="78" rx="52" ry="24" fill="#C4A060"/><ellipse cx="100" cy="75" rx="40" ry="18" fill="rgba(0,0,0,0.1)"/><ellipse cx="55" cy="130" rx="12" ry="18" fill="#8B5A28"/><ellipse cx="55" cy="122" rx="10" ry="10" fill="#7A4A1F"/><ellipse cx="80" cy="135" rx="12" ry="18" fill="#8B5A28"/><ellipse cx="80" cy="127" rx="10" ry="10" fill="#7A4A1F"/><ellipse cx="120" cy="135" rx="12" ry="18" fill="#8B5A28"/><ellipse cx="120" cy="127" rx="10" ry="10" fill="#7A4A1F"/><ellipse cx="145" cy="130" rx="12" ry="18" fill="#8B5A28"/><ellipse cx="145" cy="122" rx="10" ry="10" fill="#7A4A1F"/></svg></div>
@@ -625,7 +693,8 @@
         <a class="pc-btn" href="#" style="background:var(--sand)">Notify Me</a>
       </div>
     </div>
-  </div>
+  </div><!-- /old-cv-unused -->
+  </div><!-- /cv -->
 
   <!-- Simple grid view -->
   <div id="sv">
@@ -644,16 +713,28 @@
 <section id="about" class="section">
   <div class="ai">
     <div style="display:flex;align-items:center;justify-content:center">
-      <svg viewBox="0 0 300 320" width="230" fill="none">
-        <path d="M100 112 L78 62 L118 90Z" fill="#C5A87C" opacity="0.85"/>
-        <path d="M148 96 L144 46 L180 80Z" fill="#C5A87C" opacity="0.85"/>
-        <path d="M152 72 A88 88 0 1 0 152 248 L152 216 A56 56 0 1 1 152 104Z" fill="#C5A87C"/>
-        <path d="M152 104 Q232 152 152 216 L152 104Z" fill="#8B5A28"/>
-        <ellipse cx="236" cy="142" rx="16" ry="20" fill="#8B5A28" transform="rotate(-20 236 142)"/>
-        <ellipse cx="252" cy="174" rx="14" ry="18" fill="#8B5A28" transform="rotate(-10 252 174)"/>
-        <ellipse cx="244" cy="212" rx="12" ry="16" fill="#8B5A28" transform="rotate(10 244 212)"/>
-        <text x="150" y="282" text-anchor="middle" font-family="Nunito,sans-serif" font-size="36" font-weight="900" fill="#C5A87C" letter-spacing="-0.5">couch</text>
-        <text x="150" y="318" text-anchor="middle" font-family="Nunito,sans-serif" font-size="36" font-weight="900" fill="#8B5A28" letter-spacing="-0.5">petato</text>
+      <svg viewBox="0 0 180 240" width="200" fill="none">
+        <defs>
+          <mask id="cm-about">
+            <circle cx="76" cy="82" r="62" fill="white"/>
+            <circle cx="76" cy="82" r="37" fill="black"/>
+            <rect x="76" y="20" width="80" height="124" fill="black"/>
+          </mask>
+        </defs>
+        <!-- Ears -->
+        <path d="M48 48 L34 14 L66 36Z" fill="#C5A87C" opacity="0.82"/>
+        <path d="M82 36 L78 4 L102 28Z" fill="#C5A87C" opacity="0.82"/>
+        <!-- C body -->
+        <rect x="14" y="20" width="134" height="128" fill="#C5A87C" mask="url(#cm-about)"/>
+        <!-- D shape -->
+        <path d="M76 45 L76 119 C136 119 136 45 76 45 Z" fill="#8B5A28"/>
+        <!-- Paw drops -->
+        <ellipse cx="150" cy="60" rx="10" ry="14" fill="#8B5A28" transform="rotate(-22 150 60)"/>
+        <ellipse cx="160" cy="84" rx="9" ry="13" fill="#8B5A28"/>
+        <ellipse cx="150" cy="108" rx="8" ry="12" fill="#8B5A28" transform="rotate(22 150 108)"/>
+        <!-- Text -->
+        <text x="88" y="170" text-anchor="middle" font-family="Nunito,sans-serif" font-size="38" font-weight="900" fill="#C5A87C" letter-spacing="-0.5">couch</text>
+        <text x="88" y="212" text-anchor="middle" font-family="Nunito,sans-serif" font-size="38" font-weight="900" fill="#8B5A28" letter-spacing="-0.5">petato</text>
       </svg>
     </div>
     <div class="at">
@@ -738,39 +819,31 @@ ScrollTrigger.create({
   }
 });
 
-/* JOURNEY */
-const caps=['jc0','jc1','jc2','jc3','jc4'];
-caps.forEach(c=>gsap.set('#'+c,{opacity:0,y:14}));
+/* JOURNEY — simplified: launch → fly → Petatopia */
+['jc0','jc1','jc2','jc3','jc4'].forEach(c=>gsap.set('#'+c,{opacity:0,y:14}));
 gsap.set('#j-rocket',{x:0,y:0,rotation:-8,scale:0.94});
-gsap.set('#jp1',{x:'54vw',y:'-5vh'});
-gsap.set('#jp2',{x:'61vw',y:'7vh'});
-gsap.set('#jp3',{x:'57vw',y:'17vh'});
-gsap.set('#j-petato',{x:'44vw',scale:0.22,opacity:0});
+// Hide all planets — only Petatopia stays
+gsap.set('#jp1',{opacity:0,x:'200vw'});
+gsap.set('#jp2',{opacity:0,x:'200vw'});
+gsap.set('#jp3',{opacity:0,x:'200vw'});
+gsap.set('#j-petato',{x:'50vw',scale:0.18,opacity:0});
 
-const jTl=gsap.timeline({scrollTrigger:{trigger:'#journey',start:'top top',end:'bottom bottom',scrub:1.8,pin:'#journey-inner'}});
+const jTl=gsap.timeline({scrollTrigger:{trigger:'#journey',start:'top top',end:'bottom bottom',scrub:1.5,pin:'#journey-inner'}});
 jTl
-  .to('#jc0',{opacity:1,y:0,duration:1},0)
-  .to('#j-rocket',{y:'-7vh',rotation:-12,duration:2},0)
-  .to('#jc0',{opacity:0,duration:0.5},2)
-  .to('#jc1',{opacity:1,y:0,duration:0.8},2.5)
-  .to('#jp1',{x:'-5vw',duration:4.5,ease:'power1.inOut'},2)
-  .to('#j-rocket',{y:'-14vh',x:'-8vw',rotation:-5,duration:3},2.5)
-  .to('#jc1',{opacity:0,duration:0.6},6.2)
-  .to('#jp1',{x:'-76vw',opacity:0,duration:2.8,ease:'power2.in'},6.2)
-  .to('#jc2',{opacity:1,y:0,duration:0.8},7.2)
-  .to('#jp2',{x:'-10vw',y:'2vh',duration:4.5,ease:'power1.inOut'},6.8)
-  .to('#j-rocket',{x:'4vw',y:'-10vh',rotation:4,duration:3},7.2)
-  .to('#jc2',{opacity:0,duration:0.6},11.2)
-  .to('#jp2',{x:'-78vw',opacity:0,duration:2.8,ease:'power2.in'},11.2)
-  .to('#jc3',{opacity:1,y:0,duration:0.5},12.2)
-  .to('#jp3',{x:'-84vw',y:'17vh',opacity:0,duration:1.5,ease:'power3.in'},12.2)
-  .to('#j-rocket',{x:'2vw',rotation:-2,duration:1.5},12.2)
-  .to('#jc3',{opacity:0,duration:0.4},13.7)
-  .to('#jc4',{opacity:1,y:0,duration:1},14.2)
-  .to('#j-petato',{x:'5vw',scale:0.74,opacity:1,duration:5.5,ease:'power2.out'},13.8)
-  .to('#j-rocket',{x:'-14vw',y:'-5vh',rotation:-8,scale:0.64,duration:4.5},14.2)
-  .to('#jc4',{opacity:0,duration:1},18.2)
-  .to('#j-petato',{x:'-5vw',scale:1.18,duration:3},18.2);
+  // Phase 1: Launch, rocket rises
+  .to('#jc0',{opacity:1,y:0,duration:1.2},0)
+  .to('#j-rocket',{y:'-20vh',rotation:-15,scale:0.78,duration:3,ease:'power2.out'},0)
+  .to('#jc0',{opacity:0,duration:0.8},2.5)
+
+  // Phase 2: Deep space — rocket small, Petatopia appears on horizon
+  .to('#jc4',{opacity:1,y:0,duration:1.2},3.2)
+  .to('#j-rocket',{x:'-18vw',y:'-8vh',rotation:-10,scale:0.45,duration:4,ease:'power1.inOut'},3)
+  .to('#j-petato',{x:'8vw',scale:0.82,opacity:1,duration:5,ease:'power2.out'},3.2)
+
+  // Phase 3: Petatopia fills viewport
+  .to('#jc4',{opacity:0,duration:1},7)
+  .to('#j-petato',{x:'-2vw',scale:1.35,duration:4,ease:'power2.in'},7)
+  .to('#j-rocket',{x:'-28vw',scale:0.28,opacity:0,duration:3},7);
 
 /* CLOUD BURST */
 gsap.set('#cl',{x:0});gsap.set('#cr',{x:0});gsap.set('#lc',{opacity:0,scale:0.92});
@@ -800,22 +873,399 @@ let simple=false;
 function toggleView(){
   simple=!simple;
   const btn=document.getElementById('simple-toggle');
+  const cv=document.getElementById('cv');
+  const sv=document.getElementById('sv');
+  // Kill any GSAP control over these elements first
+  gsap.killTweensOf(['.pc','.sc']);
   if(simple){
-    document.getElementById('cv').style.display='none';
-    document.getElementById('sv').style.display='block';
+    cv.style.cssText='display:none!important';
+    sv.style.cssText='display:block!important';
     btn.textContent='⊞ Carousel View';
-    gsap.fromTo('.sc',{opacity:0,y:18},{opacity:1,y:0,duration:0.45,stagger:0.05,ease:'power2.out'});
+    // Force all sc cards visible
+    document.querySelectorAll('.sc').forEach(el=>{
+      el.style.opacity='1';el.style.transform='none';
+    });
   }else{
-    document.getElementById('cv').style.display='block';
-    document.getElementById('sv').style.display='none';
+    sv.style.cssText='display:none!important';
+    cv.style.cssText='display:block!important';
     btn.textContent='⊞ Simple View';
-    gsap.fromTo('.pc',{opacity:0,y:18},{opacity:1,y:0,duration:0.45,stagger:0.05,ease:'power2.out'});
+    document.querySelectorAll('.pc').forEach(el=>{
+      el.style.opacity='1';el.style.transform='';
+    });
   }
-  document.getElementById('products').scrollIntoView({behavior:'smooth'});
+  document.getElementById('products').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
 gsap.ticker.lagSmoothing(0);
 ScrollTrigger.refresh();
+
+/* ═══════════════════════════════════════════════════════
+   THREE.JS ISOMETRIC PRODUCT SHOWROOM
+═══════════════════════════════════════════════════════ */
+(function initShowroom(){
+  const canvas = document.getElementById('three-canvas');
+  if(!canvas || typeof THREE === 'undefined') return;
+
+  const stage = document.getElementById('three-stage');
+  let W = stage.clientWidth, H = stage.clientHeight;
+
+  // Renderer
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:false});
+  renderer.setSize(W, H);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.setClearColor(0xF5F0E8, 1);
+
+  // Scene
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(0xF5F0E8, 18, 35);
+
+  // Isometric-ish orthographic camera
+  const frustum = 7;
+  const aspect = W / H;
+  const camera = new THREE.OrthographicCamera(
+    -frustum*aspect, frustum*aspect, frustum, -frustum, 0.1, 100
+  );
+  camera.position.set(12, 10, 12);
+  camera.lookAt(0, 0, 0);
+
+  // Lights
+  scene.add(new THREE.AmbientLight(0xFFF8F0, 0.75));
+  const sun = new THREE.DirectionalLight(0xFFFAF0, 1.4);
+  sun.position.set(8, 14, 8);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.near = 0.1;
+  sun.shadow.camera.far = 60;
+  sun.shadow.camera.left = -12;
+  sun.shadow.camera.right = 12;
+  sun.shadow.camera.top = 12;
+  sun.shadow.camera.bottom = -12;
+  sun.shadow.bias = -0.001;
+  scene.add(sun);
+  const fill = new THREE.DirectionalLight(0xF0E8D8, 0.5);
+  fill.position.set(-6, 4, -6);
+  scene.add(fill);
+  const rim = new THREE.DirectionalLight(0xFFE8C0, 0.3);
+  rim.position.set(0, 2, -10);
+  scene.add(rim);
+
+  // Ground plane (receives shadows)
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(40, 40),
+    new THREE.MeshLambertMaterial({color:0xF0EAD8})
+  );
+  ground.rotation.x = -Math.PI/2;
+  ground.position.y = -0.01;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // ── MATERIALS ──────────────────────────────────────────────
+  const M = {
+    cream:   new THREE.MeshStandardMaterial({color:0xE8D5B2, roughness:0.92, metalness:0}),
+    sand:    new THREE.MeshStandardMaterial({color:0xC8A870, roughness:0.88, metalness:0}),
+    caramel: new THREE.MeshStandardMaterial({color:0xD4956A, roughness:0.85, metalness:0}),
+    walnut:  new THREE.MeshStandardMaterial({color:0x7A4820, roughness:0.75, metalness:0.04}),
+    darkwood:new THREE.MeshStandardMaterial({color:0x5A3412, roughness:0.7,  metalness:0.05}),
+    teal:    new THREE.MeshStandardMaterial({color:0x7ABFB8, roughness:0.9,  metalness:0}),
+    sage:    new THREE.MeshStandardMaterial({color:0x9AB890, roughness:0.9,  metalness:0}),
+    charcoal:new THREE.MeshStandardMaterial({color:0x3A3530, roughness:0.85, metalness:0.02}),
+    glass:   new THREE.MeshStandardMaterial({color:0xD8EEF0, roughness:0.05, metalness:0.1, transparent:true, opacity:0.45}),
+  };
+
+  // Helper: rounded box using Buffered geometry approximation
+  function box(w,h,d,mat,rx=0,ry=0,rz=0){
+    const g = new THREE.BoxGeometry(w,h,d,2,2,2);
+    const m = new THREE.Mesh(g, mat);
+    m.rotation.set(rx,ry,rz);
+    m.castShadow=true; m.receiveShadow=true;
+    return m;
+  }
+  function cyl(rt,rb,h,seg,mat){
+    const m=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg),mat);
+    m.castShadow=true; return m;
+  }
+  function torus(R,r,ts,rs,mat){
+    const m=new THREE.Mesh(new THREE.TorusGeometry(R,r,ts,rs),mat);
+    m.castShadow=true; return m;
+  }
+  function sphere(r,ws,hs,mat){
+    const m=new THREE.Mesh(new THREE.SphereGeometry(r,ws,hs),mat);
+    m.castShadow=true; return m;
+  }
+
+  // ── PRODUCT BUILDERS ───────────────────────────────────────
+
+  // 1) Cami Round — donut pet bed with 4 couch legs
+  function buildCami(){
+    const g=new THREE.Group();
+    const ring = torus(0.75,0.32,20,48,M.cream);
+    ring.rotation.x=Math.PI/2; ring.position.y=0.32;
+    g.add(ring);
+    const inner = new THREE.Mesh(new THREE.CylinderGeometry(0.44,0.44,0.12,32),M.sand);
+    inner.position.y=0.06; inner.castShadow=true; g.add(inner);
+    // Subtle cushion seam on top of ring
+    const seam = torus(0.75,0.035,8,48,M.sand);
+    seam.rotation.x=Math.PI/2; seam.position.y=0.62;
+    g.add(seam);
+    // 4 Legs
+    [[0.65,0.55],[0.65,-0.55],[-0.65,0.55],[-0.65,-0.55]].forEach(([x,z])=>{
+      const leg=cyl(0.055,0.04,0.38,8,M.walnut);
+      leg.position.set(x,-0.19,z); g.add(leg);
+      const foot=cyl(0.07,0.055,0.04,8,M.darkwood);
+      foot.position.set(x,-0.38,z); g.add(foot);
+    });
+    return g;
+  }
+
+  // 2) Box Sofa — deep cushioned sofa
+  function buildSofa(){
+    const g=new THREE.Group();
+    const seat=box(1.9,0.3,1.1,M.caramel); seat.position.y=0.38; g.add(seat);
+    const back=box(1.9,0.62,0.24,M.sand); back.position.set(0,0.77,-0.43); g.add(back);
+    const cush1=box(0.87,0.18,0.88,M.cream); cush1.position.set(-0.48,0.59,0); g.add(cush1);
+    const cush2=box(0.87,0.18,0.88,M.cream); cush2.position.set(0.48,0.59,0); g.add(cush2);
+    const armL=box(0.2,0.48,1.1,M.caramel); armL.position.set(-1.05,0.47,0); g.add(armL);
+    const armR=box(0.2,0.48,1.1,M.caramel); armR.position.set(1.05,0.47,0); g.add(armR);
+    // Legs
+    [[0.82,0.46],[0.82,-0.46],[-0.82,0.46],[-0.82,-0.46]].forEach(([x,z])=>{
+      const l=box(0.1,0.22,0.1,M.walnut); l.position.set(x,0.11,z); g.add(l);
+    });
+    return g;
+  }
+
+  // 3) Accent Chair
+  function buildChair(){
+    const g=new THREE.Group();
+    const seat=box(1.0,0.24,0.92,M.teal); seat.position.y=0.5; g.add(seat);
+    const back=box(1.0,0.78,0.2,M.teal); back.position.set(0,0.97,-0.36); g.add(back);
+    const cushTop=box(0.88,0.12,0.8,M.cream); cushTop.position.set(0,0.68,0.04); g.add(cushTop);
+    const armL=box(0.14,0.28,0.92,M.teal); armL.position.set(-0.57,0.64,0); g.add(armL);
+    const armR=box(0.14,0.28,0.92,M.teal); armR.position.set(0.57,0.64,0); g.add(armR);
+    [[0.42,0.35],[-0.42,0.35],[0.42,-0.35],[-0.42,-0.35]].forEach(([x,z])=>{
+      const l=cyl(0.04,0.04,0.5,8,M.walnut); l.position.set(x,0.25,z); g.add(l);
+    });
+    return g;
+  }
+
+  // 4) Round Ottoman / Lisa
+  function buildOttoman(){
+    const g=new THREE.Group();
+    const body=cyl(0.72,0.68,0.38,32,M.sand); body.position.y=0.33; g.add(body);
+    const top=cyl(0.74,0.74,0.08,32,M.cream); top.position.y=0.55; g.add(top);
+    const button=sphere(0.1,8,8,M.walnut); button.position.y=0.64; g.add(button);
+    // Tufting lines (cylinders as dividers around circumference)
+    for(let i=0;i<8;i++){
+      const angle=(i/8)*Math.PI*2;
+      const seam=box(0.02,0.4,0.02,M.caramel);
+      seam.position.set(Math.cos(angle)*0.7,0.38,Math.sin(angle)*0.7);
+      seam.rotation.y=-angle; g.add(seam);
+    }
+    [[0.45,0.45],[-0.45,0.45],[0.45,-0.45],[-0.45,-0.45]].forEach(([x,z])=>{
+      const l=cyl(0.04,0.04,0.32,8,M.walnut); l.position.set(x,0.16,z); g.add(l);
+    });
+    return g;
+  }
+
+  // 5) Lounge Daybed
+  function buildDaybed(){
+    const g=new THREE.Group();
+    const base=box(2.1,0.18,0.95,M.sage); base.position.y=0.44; g.add(base);
+    const mattress=box(2.0,0.2,0.86,M.cream); mattress.position.y=0.64; g.add(mattress);
+    const headboard=box(0.2,0.58,0.95,M.sage); headboard.position.set(-1.0,0.67,-0.0); g.add(headboard);
+    // Bolster pillow
+    const bolster=cyl(0.14,0.14,0.8,16,M.cream);
+    bolster.rotation.z=Math.PI/2; bolster.position.set(-0.9,0.85,0); g.add(bolster);
+    [[0.9,0.4],[0.9,-0.4],[-0.9,0.4],[-0.9,-0.4]].forEach(([x,z])=>{
+      const l=box(0.1,0.38,0.1,M.walnut); l.position.set(x,0.19,z); g.add(l);
+    });
+    return g;
+  }
+
+  // 6) Acrylic / Glass box
+  function buildAcrylic(){
+    const g=new THREE.Group();
+    const body=box(1.4,0.56,0.9,M.glass); body.position.y=0.52; g.add(body);
+    const cushion=box(1.28,0.14,0.78,M.cream); cushion.position.y=0.84; g.add(cushion);
+    const back=box(1.4,0.5,0.08,M.glass); back.position.set(0,0.72,-0.46); g.add(back);
+    [[0.62,0.38],[-0.62,0.38],[0.62,-0.38],[-0.62,-0.38]].forEach(([x,z])=>{
+      const l=cyl(0.04,0.04,0.44,8,M.walnut); l.position.set(x,0.22,z); g.add(l);
+    });
+    return g;
+  }
+
+  // ── FLOATING ISLAND PLATFORM ────────────────────────────────
+  // Main island disc
+  const islandMat = new THREE.MeshStandardMaterial({color:0xD4A870, roughness:0.82, metalness:0.02});
+  const island = new THREE.Mesh(new THREE.CylinderGeometry(5.8,5.4,0.28,64), islandMat);
+  island.position.y = -0.14;
+  island.receiveShadow = true;
+  island.castShadow = true;
+  scene.add(island);
+  // Island edge ring (darker wood)
+  const rimMat = new THREE.MeshStandardMaterial({color:0x8B5A28, roughness:0.75, metalness:0.03});
+  const rim = new THREE.Mesh(new THREE.TorusGeometry(5.6,0.14,8,64), rimMat);
+  rim.rotation.x = Math.PI/2; rim.position.y = -0.01;
+  scene.add(rim);
+  // Island underside (slightly darker)
+  const under = new THREE.Mesh(new THREE.CylinderGeometry(5.2,5.2,0.06,64),
+    new THREE.MeshStandardMaterial({color:0xA07040, roughness:0.9}));
+  under.position.y = -0.28;
+  scene.add(under);
+  // Shadow under island (fake soft shadow disc)
+  const shadowDisc = new THREE.Mesh(
+    new THREE.CircleGeometry(6,64),
+    new THREE.MeshBasicMaterial({color:0xC8B090, transparent:true, opacity:0.35, depthWrite:false})
+  );
+  shadowDisc.rotation.x = -Math.PI/2;
+  shadowDisc.position.y = -0.32;
+  scene.add(shadowDisc);
+
+  // ── PRODUCT DATA ────────────────────────────────────────────
+  const PRODUCTS = [
+    {name:'Cami Round',  region:'☁️ Cloud District',  price:'AED 890+',  build:buildCami,   pos:[-2.0, 0.14,  1.6], rot: 0.4},
+    {name:'Box Sofa',    region:'🏜️ Cozy Canyon',    price:'AED 750+',  build:buildSofa,   pos:[ 2.2, 0.14,  1.4], rot:-0.3},
+    {name:'Accent Chair',region:'🌿 Nap Valley',      price:'AED 950+',  build:buildChair,  pos:[ 0,   0.14, -1.8], rot: 0.15},
+    {name:'Lisa Ottoman',region:'☁️ Cloud District',  price:'AED 680+',  build:buildOttoman,pos:[-2.6, 0.14, -1.2], rot: 0.6},
+    {name:'Daybed',      region:'🌿 Nap Valley',      price:'AED 1,250+',build:buildDaybed, pos:[ 2.4, 0.14, -1.6], rot:-0.5},
+    {name:'Acrylic Box', region:'✨ Crystal Peak',    price:'AED 1,100+',build:buildAcrylic,pos:[ 0,   0.14,  2.2], rot: 0.25},
+  ];
+
+  const meshGroups=[], floatOffsets=[];
+  PRODUCTS.forEach((p,i)=>{
+    const g=p.build();
+    g.position.set(p.pos[0],p.pos[1],p.pos[2]);
+    g.rotation.y=p.rot;
+    scene.add(g);
+    meshGroups.push(g);
+    floatOffsets.push(Math.random()*Math.PI*2);
+  });
+
+  // Product chips
+  const chipsEl=document.getElementById('prod-chips');
+  PRODUCTS.forEach((p,i)=>{
+    const chip=document.createElement('button');
+    chip.className='p-chip';chip.textContent=p.name;
+    chip.onclick=()=>selectProduct(i);chipsEl.appendChild(chip);
+  });
+
+  const infoEl=document.getElementById('prod-info');
+  const regionEl=document.getElementById('prod-region');
+  const nameEl=document.getElementById('prod-name');
+  const priceEl=document.getElementById('prod-price');
+  let selectedIdx=-1, hoveredIdx=-1;
+
+  function selectProduct(idx){
+    selectedIdx=idx;
+    const p=PRODUCTS[idx];
+    regionEl.textContent=p.region;
+    nameEl.textContent=p.name;
+    priceEl.textContent=p.price;
+    infoEl.classList.add('show');
+    document.querySelectorAll('.p-chip').forEach((c,i)=>c.classList.toggle('active',i===idx));
+  }
+
+  // Raycaster
+  const raycaster=new THREE.Raycaster(), mouse=new THREE.Vector2(), allMeshes=[];
+  meshGroups.forEach((g,gi)=>g.traverse(m=>{if(m.isMesh){m.userData.productIdx=gi;allMeshes.push(m);}}));
+
+  canvas.addEventListener('mousemove',e=>{
+    const r=canvas.getBoundingClientRect();
+    mouse.x=((e.clientX-r.left)/r.width)*2-1;
+    mouse.y=-((e.clientY-r.top)/r.height)*2+1;
+    raycaster.setFromCamera(mouse,camera);
+    const hits=raycaster.intersectObjects(allMeshes);
+    if(hits.length>0){hoveredIdx=hits[0].object.userData.productIdx;canvas.style.cursor='pointer';}
+    else{hoveredIdx=-1;canvas.style.cursor='grab';}
+  });
+
+  // Click: show info + open Angle 3D
+  canvas.addEventListener('click',()=>{
+    if(hoveredIdx>=0){
+      selectProduct(hoveredIdx);
+      // Open Angle 3D configurator in new tab
+      window.open('https://www.angle3dconfigurator.com/','_blank');
+    }
+  });
+
+  // ── ORBIT (drag to rotate) ────────────────────────────────
+  let isDragging=false, lastX=0, lastY=0;
+  let orbitYaw=Math.PI*0.25, orbitPitch=0.55; // start isometric
+  const ORBIT_R=20;
+
+  function updateCamera(){
+    // Clamp pitch: can't go below island level or too high
+    orbitPitch=Math.max(0.15, Math.min(1.1, orbitPitch));
+    camera.position.set(
+      ORBIT_R*Math.cos(orbitYaw)*Math.cos(orbitPitch),
+      ORBIT_R*Math.sin(orbitPitch),
+      ORBIT_R*Math.sin(orbitYaw)*Math.cos(orbitPitch)
+    );
+    camera.lookAt(0,0.5,0);
+    camera.updateProjectionMatrix();
+  }
+  updateCamera();
+
+  canvas.addEventListener('mousedown',e=>{isDragging=true;lastX=e.clientX;lastY=e.clientY;});
+  window.addEventListener('mouseup',()=>{isDragging=false;});
+  window.addEventListener('mousemove',e=>{
+    if(!isDragging)return;
+    const dx=e.clientX-lastX, dy=e.clientY-lastY;
+    orbitYaw   -= dx*0.010;   // ← inverted (natural drag)
+    orbitPitch -= dy*0.005;   // ← inverted (drag up = look up)
+    lastX=e.clientX; lastY=e.clientY;
+    updateCamera();
+  });
+
+  // Touch support
+  let lastTouch=null;
+  canvas.addEventListener('touchstart',e=>{lastTouch=e.touches[0];});
+  canvas.addEventListener('touchmove',e=>{
+    if(!lastTouch)return;
+    const t=e.touches[0];
+    orbitYaw  -=(t.clientX-lastTouch.clientX)*0.012;
+    orbitPitch-=(t.clientY-lastTouch.clientY)*0.006;
+    lastTouch=t; updateCamera(); e.preventDefault();
+  },{passive:false});
+
+  // Resize
+  function onResize(){
+    W=stage.clientWidth; H=stage.clientHeight;
+    const asp=W/H;
+    camera.left=-frustum*asp; camera.right=frustum*asp;
+    camera.top=frustum; camera.bottom=-frustum;
+    camera.updateProjectionMatrix();
+    renderer.setSize(W,H);
+  }
+  window.addEventListener('resize',onResize);
+
+  // ── ANIMATE ───────────────────────────────────────────────
+  let t=0;
+  function animate(){
+    requestAnimationFrame(animate);
+    t+=0.009;
+    // Gentle island bob
+    island.position.y    = -0.14 + Math.sin(t*0.6)*0.04;
+    rim.position.y       = -0.01 + Math.sin(t*0.6)*0.04;
+    under.position.y     = -0.28 + Math.sin(t*0.6)*0.04;
+    shadowDisc.position.y= -0.38 + Math.sin(t*0.6)*0.01;
+    shadowDisc.material.opacity = 0.30 + Math.sin(t*0.6)*0.05;
+
+    meshGroups.forEach((g,i)=>{
+      const base=PRODUCTS[i].pos[1];
+      g.position.y = base + Math.sin(t*0.9+floatOffsets[i])*0.07;
+      g.rotation.y = PRODUCTS[i].rot + Math.sin(t*0.25+i)*0.06;
+      // Smooth scale — no vibration
+      const tgt=(i===hoveredIdx||i===selectedIdx)?1.07:1.0;
+      const cur=g.scale.x;
+      const next=cur+(tgt-cur)*0.09;
+      g.scale.setScalar(next);
+    });
+    renderer.render(scene,camera);
+  }
+  animate();
+})();
 </script>
 </body>
 </html>
